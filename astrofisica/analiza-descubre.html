@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analiza y Descubre</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1040 40%, #2d1b69 100%);
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  overflow-x: hidden;
+  position: relative;
+}
+
+canvas#starfield {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Nebula glows */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  opacity: 0.15;
+  z-index: 0;
+  pointer-events: none;
+}
+body::before {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #ff3cac, transparent 70%);
+  top: -150px; right: -150px;
+}
+body::after {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #7b2ff2, transparent 70%);
+  bottom: -100px; left: -100px;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 20px 60px;
+}
+
+/* Back button */
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #d4a843;
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  padding: 10px 20px;
+  border: 1px solid rgba(212,168,67,0.3);
+  border-radius: 12px;
+  background: rgba(212,168,67,0.05);
+  transition: all 0.3s;
+  margin-bottom: 30px;
+}
+.back-btn:hover {
+  background: rgba(212,168,67,0.15);
+  border-color: rgba(212,168,67,0.6);
+  box-shadow: 0 0 20px rgba(212,168,67,0.15);
+}
+
+/* Title */
+.game-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: #d4a843;
+  text-align: center;
+  margin-bottom: 10px;
+  text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.25);
+  animation: titleGlow 3s ease-in-out infinite;
+}
+@keyframes titleGlow {
+  0%, 100% { text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.25); }
+  50% { text-shadow: 0 0 40px rgba(212,168,67,0.8), 0 0 80px rgba(212,168,67,0.4), 0 0 120px rgba(212,168,67,0.2); }
+}
+
+.subtitle {
+  text-align: center;
+  color: rgba(255,255,255,0.6);
+  font-size: 1.05rem;
+  margin-bottom: 35px;
+  font-weight: 300;
+}
+
+/* Progress bar */
+.progress-bar {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+.progress-dot {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 2px solid rgba(255,255,255,0.2);
+  transition: all 0.5s;
+  position: relative;
+}
+.progress-dot.active {
+  background: #d4a843;
+  border-color: #d4a843;
+  box-shadow: 0 0 12px rgba(212,168,67,0.6);
+}
+.progress-dot.completed {
+  background: #4ade80;
+  border-color: #4ade80;
+  box-shadow: 0 0 10px rgba(74,222,128,0.5);
+}
+.progress-dot.active::after {
+  content: '';
+  position: absolute;
+  top: -4px; left: -4px; right: -4px; bottom: -4px;
+  border-radius: 50%;
+  border: 2px solid rgba(212,168,67,0.4);
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0; }
+}
+
+/* Round container */
+.round-container {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s, transform 0.6s;
+}
+.round-container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Round header */
+.round-header {
+  text-align: center;
+  margin-bottom: 25px;
+}
+.round-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.4);
+  margin-bottom: 8px;
+}
+.round-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #d4a843;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.mystery-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: rgba(123,47,242,0.2);
+  border: 2px solid rgba(123,47,242,0.5);
+  font-size: 1.5rem;
+  animation: iconPulse 2s ease-in-out infinite;
+}
+@keyframes iconPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(123,47,242,0.3); }
+  50% { box-shadow: 0 0 25px rgba(123,47,242,0.6); transform: scale(1.05); }
+}
+
+/* Terminal / Data panel */
+.terminal {
+  background: linear-gradient(145deg, rgba(10,14,39,0.95), rgba(15,10,35,0.98));
+  border: 1px solid rgba(123,47,242,0.3);
+  border-radius: 16px;
+  padding: 0;
+  margin-bottom: 30px;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(123,47,242,0.1), inset 0 0 60px rgba(0,0,0,0.3);
+}
+.terminal-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 18px;
+  background: rgba(123,47,242,0.08);
+  border-bottom: 1px solid rgba(123,47,242,0.15);
+}
+.terminal-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.terminal-dot:nth-child(1) { background: #ff5f57; }
+.terminal-dot:nth-child(2) { background: #ffbd2e; }
+.terminal-dot:nth-child(3) { background: #28c840; }
+.terminal-label {
+  margin-left: 10px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 1px;
+}
+.terminal-body {
+  padding: 24px;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.95rem;
+  line-height: 2;
+  min-height: 200px;
+}
+.data-line {
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.data-line.visible { opacity: 1; }
+.data-label {
+  color: #7b2ff2;
+}
+.data-value {
+  color: #d4a843;
+}
+.data-hint {
+  color: #4ade80;
+  font-style: italic;
+}
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 1.1em;
+  background: #d4a843;
+  vertical-align: middle;
+  animation: blink 0.7s step-end infinite;
+  margin-left: 2px;
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Options */
+.options-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 25px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+.options-container.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.option-btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 16px 20px;
+  border: 2px solid rgba(123,47,242,0.3);
+  border-radius: 14px;
+  background: rgba(123,47,242,0.08);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+.option-btn::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(123,47,242,0.1), transparent);
+  transition: left 0.5s;
+}
+.option-btn:hover:not(.disabled) {
+  border-color: rgba(123,47,242,0.7);
+  background: rgba(123,47,242,0.15);
+  box-shadow: 0 0 25px rgba(123,47,242,0.2);
+  transform: translateY(-2px);
+}
+.option-btn:hover::before { left: 100%; }
+.option-btn.correct {
+  border-color: #d4a843 !important;
+  background: rgba(212,168,67,0.2) !important;
+  box-shadow: 0 0 30px rgba(212,168,67,0.4) !important;
+  color: #d4a843;
+  animation: correctPop 0.4s ease-out;
+}
+@keyframes correctPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.option-btn.wrong {
+  border-color: #ef4444 !important;
+  background: rgba(239,68,68,0.15) !important;
+  animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(4px); }
+}
+.option-btn.disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+/* Feedback area */
+.feedback {
+  text-align: center;
+  min-height: 80px;
+  margin-bottom: 20px;
+}
+.feedback-correct {
+  font-family: 'Cinzel', serif;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #d4a843;
+  animation: feedbackIn 0.5s ease-out;
+  text-shadow: 0 0 20px rgba(212,168,67,0.5);
+}
+.feedback-wrong {
+  font-size: 1.1rem;
+  color: #ef4444;
+  font-weight: 600;
+  animation: feedbackIn 0.3s ease-out;
+}
+.fun-fact {
+  margin-top: 12px;
+  padding: 16px 24px;
+  background: rgba(212,168,67,0.08);
+  border: 1px solid rgba(212,168,67,0.2);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  animation: feedbackIn 0.5s ease-out 0.2s both;
+}
+.fun-fact strong {
+  color: #d4a843;
+}
+@keyframes feedbackIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Next / action buttons */
+.next-btn {
+  display: block;
+  margin: 0 auto;
+  padding: 14px 50px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0a0e27;
+  background: linear-gradient(135deg, #d4a843, #f0cc6b);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 20px rgba(212,168,67,0.3);
+  animation: feedbackIn 0.4s ease-out 0.3s both;
+}
+.next-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(212,168,67,0.5);
+}
+
+/* End screen */
+.end-screen {
+  text-align: center;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+.end-screen.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.end-title {
+  font-family: 'Cinzel', serif;
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #d4a843;
+  text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.3);
+  animation: titleGlow 2s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+.end-score {
+  font-size: 1.3rem;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 12px;
+}
+.end-score span {
+  color: #d4a843;
+  font-weight: 700;
+  font-size: 1.6rem;
+}
+.end-message {
+  color: rgba(255,255,255,0.55);
+  font-size: 1rem;
+  margin-bottom: 35px;
+}
+.end-btn {
+  display: inline-block;
+  padding: 16px 50px;
+  font-family: 'Inter', sans-serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0a0e27;
+  background: linear-gradient(135deg, #d4a843, #f0cc6b);
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.3s;
+  box-shadow: 0 4px 20px rgba(212,168,67,0.3);
+}
+.end-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 30px rgba(212,168,67,0.5);
+}
+
+/* Particle canvas for celebrations */
+canvas#particles {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .game-title { font-size: 2rem; }
+  .options-container { grid-template-columns: 1fr; }
+  .terminal-body { font-size: 0.82rem; padding: 16px; }
+  .round-title { font-size: 1.4rem; }
+  .container { padding: 20px 14px 40px; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<canvas id="particles"></canvas>
+
+<div class="container">
+  <a href="index.html" class="back-btn">&#8592; Volver</a>
+
+  <h1 class="game-title">Analiza y Descubre</h1>
+  <p class="subtitle">Analiza los datos del telescopio e identifica el objeto misterioso</p>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <div id="gameArea"></div>
+  <div id="endScreen" class="end-screen" style="display:none;"></div>
+</div>
+
+<script>
+// === STARFIELD ===
+(function() {
+  const c = document.getElementById('starfield');
+  const ctx = c.getContext('2d');
+  let stars = [];
+  function resize() {
+    c.width = window.innerWidth;
+    c.height = window.innerHeight;
+  }
+  function init() {
+    resize();
+    stars = [];
+    const count = Math.floor((c.width * c.height) / 3000);
+    for (let i = 0; i < count; i++) {
+      stars.push({
+        x: Math.random() * c.width,
+        y: Math.random() * c.height,
+        r: Math.random() * 1.5 + 0.3,
+        a: Math.random() * 0.8 + 0.2,
+        dx: (Math.random() - 0.5) * 0.15,
+        dy: (Math.random() - 0.5) * 0.1,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        twinkleOffset: Math.random() * Math.PI * 2
+      });
+    }
+  }
+  let time = 0;
+  function draw() {
+    ctx.clearRect(0, 0, c.width, c.height);
+    time += 1;
+    for (const s of stars) {
+      s.x += s.dx;
+      s.y += s.dy;
+      if (s.x < 0) s.x = c.width;
+      if (s.x > c.width) s.x = 0;
+      if (s.y < 0) s.y = c.height;
+      if (s.y > c.height) s.y = 0;
+      const alpha = s.a * (0.6 + 0.4 * Math.sin(time * s.twinkleSpeed + s.twinkleOffset));
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  init();
+  draw();
+  window.addEventListener('resize', init);
+})();
+
+// === PARTICLE SYSTEM (celebrations) ===
+const pCanvas = document.getElementById('particles');
+const pCtx = pCanvas.getContext('2d');
+let particles = [];
+function resizeParticles() {
+  pCanvas.width = window.innerWidth;
+  pCanvas.height = window.innerHeight;
+}
+resizeParticles();
+window.addEventListener('resize', resizeParticles);
+
+function spawnBurst(x, y, count, colors) {
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 6 + 2;
+    particles.push({
+      x, y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 2,
+      life: 1,
+      decay: Math.random() * 0.015 + 0.008,
+      r: Math.random() * 4 + 2,
+      color: colors[Math.floor(Math.random() * colors.length)]
+    });
+  }
+}
+
+function spawnFireworks() {
+  const count = 5;
+  for (let i = 0; i < count; i++) {
+    setTimeout(() => {
+      const x = Math.random() * pCanvas.width * 0.6 + pCanvas.width * 0.2;
+      const y = Math.random() * pCanvas.height * 0.4 + pCanvas.height * 0.1;
+      spawnBurst(x, y, 60, ['#d4a843','#f0cc6b','#7b2ff2','#ff3cac','#4ade80','#ffffff']);
+    }, i * 400);
+  }
+}
+
+function spawnCorrectBurst() {
+  const rect = document.getElementById('gameArea').getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  spawnBurst(x, y, 40, ['#d4a843','#f0cc6b','#fff5d4','#ffffff']);
+}
+
+(function animateParticles() {
+  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.08;
+    p.life -= p.decay;
+    if (p.life <= 0) { particles.splice(i, 1); continue; }
+    pCtx.globalAlpha = p.life;
+    pCtx.beginPath();
+    pCtx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
+    pCtx.fillStyle = p.color;
+    pCtx.fill();
+  }
+  pCtx.globalAlpha = 1;
+  requestAnimationFrame(animateParticles);
+})();
+
+// === GAME DATA ===
+const rounds = [
+  {
+    label: 'Ronda 1 — Fácil',
+    data: [
+      { label: 'Temperatura', value: '5,778 K' },
+      { label: 'Masa', value: '1.0 masas solares' },
+      { label: 'Radio', value: '1.0 radios solares' },
+      { label: 'Luminosidad', value: '1.0 luminosidades solares' },
+    ],
+    hint: 'Es la estrella más cercana a la Tierra',
+    options: ['El Sol', 'Sirio', 'Betelgeuse', 'Alfa Centauri'],
+    answer: 0,
+    funFact: '¡El Sol contiene el 99.86% de toda la masa del Sistema Solar!'
+  },
+  {
+    label: 'Ronda 2 — Media',
+    data: [
+      { label: 'Temperatura', value: '25,000 K' },
+      { label: 'Masa', value: '0.6 masas solares' },
+      { label: 'Radio', value: '0.01 radios solares' },
+      { label: 'Luminosidad', value: '0.001 luminosidades solares' },
+    ],
+    hint: 'Es muy caliente pero muy pequeña — del tamaño de la Tierra',
+    options: ['Enana Roja', 'Enana Blanca', 'Estrella de Neutrones', 'Gigante Azul'],
+    answer: 1,
+    funFact: '¡Una cucharada de enana blanca pesaría unas 5 toneladas!'
+  },
+  {
+    label: 'Ronda 3 — Media',
+    data: [
+      { label: 'Temperatura', value: '3,500 K' },
+      { label: 'Masa', value: '1.2 masas solares' },
+      { label: 'Radio', value: '100 radios solares' },
+      { label: 'Luminosidad', value: '1,000 luminosidades solares' },
+    ],
+    hint: 'Es enorme y fría para ser una estrella. Es una estrella al final de su vida',
+    options: ['Supergigante Azul', 'Gigante Roja', 'Pulsar', 'Estrella Variable'],
+    answer: 1,
+    funFact: '¡Cuando el Sol se convierta en gigante roja, llegará hasta la órbita de Marte!'
+  },
+  {
+    label: 'Ronda 4 — Difícil',
+    data: [
+      { label: 'Temperatura', value: '600,000 K' },
+      { label: 'Masa', value: '1.4 masas solares' },
+      { label: 'Radio', value: '0.00001 radios solares' },
+      { label: 'Luminosidad', value: '0.1 luminosidades solares' },
+    ],
+    hint: 'Es increíblemente densa — una cucharada pesa mil millones de toneladas',
+    options: ['Enana Blanca', 'Agujero Negro', 'Estrella de Neutrones', 'Quásar'],
+    answer: 2,
+    funFact: '¡Las estrellas de neutrones giran hasta 716 veces por SEGUNDO!'
+  },
+  {
+    label: 'Ronda 5 — Experto',
+    data: [
+      { label: 'Temperatura', value: '0 K (no emite luz)' },
+      { label: 'Masa', value: '10 masas solares' },
+      { label: 'Radio', value: '0.00003 radios solares (horizonte de eventos)' },
+      { label: 'Luminosidad', value: '0 (pero su disco de acreción brilla)' },
+    ],
+    hint: 'Ni siquiera la luz puede escapar de este objeto',
+    options: ['Estrella de Neutrones', 'Agujero Negro', 'Materia Oscura', 'Nebulosa Oscura'],
+    answer: 1,
+    funFact: '¡El agujero negro más cercano a la Tierra está a solo 1,560 años luz!'
+  }
+];
+
+let currentRound = 0;
+let score = 0;
+let firstAttempt = [true, true, true, true, true];
+
+// === PROGRESS BAR ===
+function renderProgress() {
+  const bar = document.getElementById('progressBar');
+  bar.innerHTML = '';
+  for (let i = 0; i < 5; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'progress-dot';
+    if (i < currentRound) dot.classList.add('completed');
+    if (i === currentRound) dot.classList.add('active');
+    bar.appendChild(dot);
+  }
+}
+
+// === TYPING ANIMATION ===
+function typeText(element, text, speed, callback) {
+  let i = 0;
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  element.appendChild(cursor);
+
+  function type() {
+    if (i < text.length) {
+      cursor.before(document.createTextNode(text[i]));
+      i++;
+      setTimeout(type, speed);
+    } else {
+      cursor.remove();
+      if (callback) callback();
+    }
+  }
+  type();
+}
+
+// === RENDER ROUND ===
+function renderRound(index) {
+  const round = rounds[index];
+  const area = document.getElementById('gameArea');
+  area.innerHTML = '';
+
+  const container = document.createElement('div');
+  container.className = 'round-container';
+
+  // Header
+  container.innerHTML = `
+    <div class="round-header">
+      <div class="round-label">${round.label}</div>
+      <div class="round-title">
+        <span class="mystery-icon">?</span>
+        Objeto Misterioso #${index + 1}
+      </div>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="terminal-dot"></div>
+        <div class="terminal-dot"></div>
+        <div class="terminal-dot"></div>
+        <span class="terminal-label">TELESCOPIO_ESPACIAL v3.7 // datos_entrantes...</span>
+      </div>
+      <div class="terminal-body" id="terminalBody"></div>
+    </div>
+    <div class="options-container" id="optionsContainer"></div>
+    <div class="feedback" id="feedback"></div>
+  `;
+
+  area.appendChild(container);
+
+  // Trigger visibility
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      container.classList.add('visible');
+    });
+  });
+
+  // Animate data lines
+  const body = document.getElementById('terminalBody');
+  const dataLines = round.data.map(d => ({ text: `> ${d.label}: ${d.value}`, isHint: false }));
+  dataLines.push({ text: `> Pista especial: "${round.hint}"`, isHint: true });
+
+  let lineIndex = 0;
+  function showNextLine() {
+    if (lineIndex >= dataLines.length) {
+      // Show options after a brief pause
+      setTimeout(() => showOptions(round, index), 400);
+      return;
+    }
+    const line = document.createElement('div');
+    line.className = 'data-line visible';
+    const d = dataLines[lineIndex];
+
+    if (d.isHint) {
+      const parts = d.text.split(': ');
+      const labelSpan = document.createElement('span');
+      labelSpan.className = 'data-label';
+      const valueSpan = document.createElement('span');
+      valueSpan.className = 'data-hint';
+      typeText(line, '', 0, () => {
+        line.innerHTML = '';
+        typeTextStyled(line, d.text, 25, () => {
+          lineIndex++;
+          setTimeout(showNextLine, 500);
+        }, 'hint');
+      });
+    } else {
+      typeTextStyled(line, d.text, 22, () => {
+        lineIndex++;
+        setTimeout(showNextLine, 400);
+      }, 'data');
+    }
+    body.appendChild(line);
+  }
+
+  setTimeout(showNextLine, 600);
+}
+
+function typeTextStyled(element, text, speed, callback, type) {
+  // Parse "> Label: Value"
+  const colonIdx = text.indexOf(': ');
+  const label = text.substring(0, colonIdx + 2);
+  const value = text.substring(colonIdx + 2);
+
+  let i = 0;
+  const full = text;
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  element.appendChild(cursor);
+
+  function step() {
+    if (i < full.length) {
+      // Rebuild with styled spans
+      let html = '';
+      const soFar = full.substring(0, i + 1);
+      if (i < label.length) {
+        html = `<span class="data-label">${soFar}</span>`;
+      } else {
+        const cls = type === 'hint' ? 'data-hint' : 'data-value';
+        html = `<span class="data-label">${label}</span><span class="${cls}">${soFar.substring(label.length)}</span>`;
+      }
+      element.innerHTML = html;
+      element.appendChild(cursor);
+      i++;
+      setTimeout(step, speed);
+    } else {
+      cursor.remove();
+      if (callback) callback();
+    }
+  }
+  step();
+}
+
+function showOptions(round, roundIndex) {
+  const container = document.getElementById('optionsContainer');
+  container.innerHTML = '';
+  round.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => handleAnswer(i, roundIndex, btn));
+    container.appendChild(btn);
+  });
+  container.classList.add('visible');
+}
+
+function handleAnswer(chosen, roundIndex, btn) {
+  const round = rounds[roundIndex];
+  const feedback = document.getElementById('feedback');
+  const options = document.querySelectorAll('.option-btn');
+
+  if (chosen === round.answer) {
+    // Correct
+    btn.classList.add('correct');
+    options.forEach((o, i) => { if (i !== chosen) o.classList.add('disabled'); });
+
+    spawnCorrectBurst();
+
+    feedback.innerHTML = `
+      <div class="feedback-correct">¡Correcto! Es: ${round.options[round.answer]}</div>
+      <div class="fun-fact"><strong>Dato curioso:</strong> ${round.funFact}</div>
+    `;
+
+    if (!firstAttempt[roundIndex]) {
+      // Already failed once, don't count
+    } else {
+      score++;
+    }
+
+    // Next button
+    const nextBtn = document.createElement('button');
+    nextBtn.className = 'next-btn';
+    nextBtn.textContent = roundIndex < 4 ? 'Siguiente >' : '¡Ver Resultados!';
+    nextBtn.addEventListener('click', () => {
+      currentRound++;
+      if (currentRound < 5) {
+        renderProgress();
+        const area = document.getElementById('gameArea');
+        const cont = area.querySelector('.round-container');
+        if (cont) {
+          cont.classList.remove('visible');
+          setTimeout(() => renderRound(currentRound), 500);
+        }
+      } else {
+        showEndScreen();
+      }
+    });
+    feedback.appendChild(nextBtn);
+
+  } else {
+    // Wrong
+    firstAttempt[roundIndex] = false;
+    btn.classList.add('wrong');
+    feedback.innerHTML = `<div class="feedback-wrong">¡Inténtalo de nuevo!</div>`;
+    setTimeout(() => {
+      btn.classList.remove('wrong');
+      btn.classList.add('disabled');
+    }, 600);
+  }
+}
+
+function showEndScreen() {
+  document.getElementById('gameArea').style.display = 'none';
+  renderProgress();
+
+  const end = document.getElementById('endScreen');
+  end.style.display = 'block';
+
+  let message = '';
+  if (score === 5) message = '¡Eres un auténtico astrofísico! Perfecto.';
+  else if (score >= 3) message = '¡Muy bien! Sabes mucho sobre el universo.';
+  else message = '¡Buen intento! Sigue explorando el cosmos.';
+
+  end.innerHTML = `
+    <div class="end-title">¡Misión Completada!</div>
+    <div class="end-score">Descubriste <span>${score}</span> de <span>5</span> objetos al primer intento</div>
+    <div class="end-message">${message}</div>
+    <a href="index.html" class="end-btn">Volver al inicio</a>
+  `;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      end.classList.add('visible');
+      spawnFireworks();
+      // Extra fireworks waves
+      setTimeout(spawnFireworks, 2000);
+      setTimeout(spawnFireworks, 4000);
+    });
+  });
+}
+
+// === START ===
+renderProgress();
+renderRound(0);
+</script>
+</body>
+</html>

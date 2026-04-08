@@ -1,0 +1,1172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>¿Cuánto Pesas en...? — Astrofísica</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0a0e27 0%, #1a1040 40%, #2d1b69 100%);
+  font-family: 'Nunito', sans-serif;
+  color: #ffffff;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Nebula corners */
+body::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  right: -15%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(180, 40, 120, 0.15) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+body::after {
+  content: '';
+  position: fixed;
+  bottom: -15%;
+  left: -10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(ellipse, rgba(123, 47, 242, 0.12) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+canvas#starfield {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 24px 60px;
+}
+
+/* Back button */
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 24px;
+  z-index: 10;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: rgba(123, 47, 242, 0.2);
+  border: 1px solid rgba(123, 47, 242, 0.5);
+  border-radius: 30px;
+  color: #d4a843;
+  text-decoration: none;
+  font-family: 'Cinzel', serif;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+.back-btn:hover {
+  background: rgba(123, 47, 242, 0.4);
+  border-color: #d4a843;
+  box-shadow: 0 0 20px rgba(212, 168, 67, 0.3);
+  transform: translateX(-3px);
+}
+.back-btn .arrow {
+  font-size: 1.1rem;
+  transition: transform 0.3s ease;
+}
+.back-btn:hover .arrow {
+  transform: translateX(-4px);
+}
+
+/* Title */
+.title-section {
+  text-align: center;
+  margin: 30px 0 40px;
+}
+h1 {
+  font-family: 'Cinzel', serif;
+  font-size: 3rem;
+  font-weight: 900;
+  color: #d4a843;
+  text-shadow: 0 0 30px rgba(212, 168, 67, 0.5), 0 0 60px rgba(212, 168, 67, 0.2);
+  animation: titleGlow 3s ease-in-out infinite;
+  line-height: 1.2;
+}
+.subtitle {
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.15rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 10px;
+  font-weight: 400;
+}
+
+@keyframes titleGlow {
+  0%, 100% { text-shadow: 0 0 30px rgba(212, 168, 67, 0.5), 0 0 60px rgba(212, 168, 67, 0.2); }
+  50% { text-shadow: 0 0 40px rgba(212, 168, 67, 0.8), 0 0 80px rgba(212, 168, 67, 0.4), 0 0 120px rgba(212, 168, 67, 0.15); }
+}
+
+/* Input section */
+.input-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(123, 47, 242, 0.3);
+  border-radius: 20px;
+  padding: 35px 40px;
+  margin-bottom: 40px;
+  backdrop-filter: blur(10px);
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.8s 0.3s forwards;
+}
+
+@keyframes fadeInUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.input-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 180px;
+}
+.input-group label {
+  font-family: 'Cinzel', serif;
+  font-size: 0.9rem;
+  color: #d4a843;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+.input-group input {
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 2px solid rgba(123, 47, 242, 0.4);
+  background: rgba(10, 14, 39, 0.7);
+  color: #fff;
+  font-family: 'Nunito', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.3s ease;
+}
+.input-group input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+  font-weight: 400;
+}
+.input-group input:focus {
+  border-color: #7b2ff2;
+  box-shadow: 0 0 20px rgba(123, 47, 242, 0.3);
+}
+.input-group.weight-input {
+  flex: 1.5;
+}
+
+.calc-btn {
+  padding: 14px 36px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7b2ff2, #9b59f7);
+  color: #fff;
+  font-family: 'Cinzel', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(123, 47, 242, 0.4);
+  white-space: nowrap;
+}
+.calc-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(123, 47, 242, 0.6), 0 0 40px rgba(123, 47, 242, 0.2);
+}
+.calc-btn:active {
+  transform: translateY(0);
+}
+
+/* Results */
+#results {
+  display: none;
+}
+#results.visible {
+  display: block;
+}
+
+.results-title {
+  font-family: 'Cinzel', serif;
+  font-size: 1.5rem;
+  color: #d4a843;
+  text-align: center;
+  margin-bottom: 32px;
+  font-weight: 700;
+}
+
+/* ── CHART ── */
+.chart-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  gap: 20px;
+  padding: 30px 10px 0;
+  overflow: visible;
+}
+
+.tube-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: visible;
+}
+
+/* Weight label above tube */
+.tube-value {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  min-height: 20px;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.tube-value.visible {
+  opacity: 1;
+}
+
+/* Glass tube */
+.tube-outer {
+  position: relative;
+  width: 70px;
+  height: 350px;
+  border-radius: 35px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.03);
+  overflow: hidden;
+}
+
+/* Glass shine */
+.tube-outer::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 6px;
+  width: 30%;
+  height: calc(100% - 16px);
+  border-radius: 20px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 40%, transparent 100%);
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* Shattered state — no glass shine */
+.tube-outer.shattered::before {
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* Earth highlight ring */
+.tube-outer.earth-tube {
+  border-color: rgba(39, 174, 96, 0.5);
+  box-shadow: 0 0 12px rgba(39, 174, 96, 0.2);
+}
+
+/* Fill liquid */
+.tube-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0%;
+  border-radius: 0 0 33px 33px;
+  transition: height 1.2s cubic-bezier(0.22, 0.61, 0.36, 1);
+  z-index: 1;
+}
+
+/* Full-height fill gets top rounding */
+.tube-fill.full-height {
+  border-radius: 33px;
+}
+
+/* Planet fill colors */
+.fill-moon {
+  background: linear-gradient(0deg, #6a6a6a 0%, #8a8a8a 60%, #a8a8a8 100%);
+  box-shadow: inset 0 0 15px rgba(138, 138, 138, 0.3);
+}
+.fill-mars {
+  background: linear-gradient(0deg, #c0392b 0%, #e67e22 70%, #f0a060 100%);
+  box-shadow: inset 0 0 15px rgba(230, 126, 34, 0.4);
+}
+.fill-earth {
+  background: linear-gradient(0deg, #2980b9 0%, #27ae60 70%, #5dde8f 100%);
+  box-shadow: inset 0 0 15px rgba(39, 174, 96, 0.4);
+}
+.fill-saturn {
+  background: linear-gradient(0deg, #c7953b 0%, #d4a843 70%, #e8c76a 100%);
+  box-shadow: inset 0 0 15px rgba(212, 168, 67, 0.4);
+}
+.fill-jupiter {
+  background: linear-gradient(0deg, #b34700 0%, #d35400 50%, #e67e22 100%);
+  box-shadow: inset 0 0 15px rgba(211, 84, 0, 0.4);
+}
+.fill-sun {
+  background: linear-gradient(0deg, #f39c12 0%, #f1c40f 70%, #fff176 100%);
+  box-shadow: inset 0 0 20px rgba(241, 196, 15, 0.5), 0 0 20px rgba(241, 196, 15, 0.3);
+}
+.fill-neutron {
+  background: linear-gradient(0deg, #2471a3 0%, #3498db 40%, #00d4ff 100%);
+  box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.5);
+  animation: neutronPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes neutronPulse {
+  0%, 100% { box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.5), 0 0 15px rgba(0, 212, 255, 0.3); }
+  50% { box-shadow: inset 0 0 30px rgba(0, 212, 255, 0.7), 0 0 30px rgba(0, 212, 255, 0.5), 0 0 50px rgba(0, 212, 255, 0.2); }
+}
+
+/* Liquid surface meniscus */
+.tube-fill::after {
+  content: '';
+  position: absolute;
+  top: -3px;
+  left: 5%;
+  width: 90%;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  filter: blur(1px);
+  z-index: 2;
+}
+
+/* Label below tube */
+.tube-label {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.tube-emoji {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+.tube-name {
+  font-family: 'Cinzel', serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  letter-spacing: 0.3px;
+}
+.tube-weight {
+  font-family: 'Nunito', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.7);
+  min-height: 18px;
+}
+
+/* ── SHATTER EFFECT ── */
+
+/* Crack overlay */
+.crack-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  pointer-events: none;
+  opacity: 0;
+}
+.crack-overlay.visible {
+  opacity: 1;
+}
+.crack-line {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  transform-origin: center;
+}
+
+/* Glass shards — positioned on the .tube-column so they can escape the tube */
+.shard {
+  position: absolute;
+  z-index: 20;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(200, 230, 255, 0.7), rgba(255, 255, 255, 0.4));
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 6px rgba(200, 230, 255, 0.4);
+}
+.shard.animate {
+  animation: shardFly 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+@keyframes shardFly {
+  0% {
+    opacity: 1;
+    transform: translate(0, 0) rotate(0deg) scale(1);
+  }
+  30% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.4);
+  }
+}
+
+/* Spill canvas — overlaid on the neutron column for fluid animation */
+.spill-canvas {
+  position: absolute;
+  top: 0;
+  left: -60px;
+  width: calc(100% + 120px);
+  height: calc(100% + 40px);
+  z-index: 16;
+  pointer-events: none;
+}
+
+/* Neutron weight goes huge */
+.tube-weight.neutron-huge {
+  font-size: 0.85rem;
+  color: #00d4ff;
+  text-shadow: 0 0 10px rgba(0, 212, 255, 0.8), 0 0 20px rgba(0, 212, 255, 0.4);
+  animation: neutronValuePulse 1s ease-in-out infinite;
+}
+
+@keyframes neutronValuePulse {
+  0%, 100% { text-shadow: 0 0 10px rgba(0, 212, 255, 0.8), 0 0 20px rgba(0, 212, 255, 0.4); }
+  50% { text-shadow: 0 0 15px rgba(0, 212, 255, 1), 0 0 30px rgba(0, 212, 255, 0.6), 0 0 50px rgba(0, 212, 255, 0.3); }
+}
+
+/* Screen shake */
+@keyframes screenShake {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-5px, 3px); }
+  20% { transform: translate(4px, -4px); }
+  30% { transform: translate(-4px, 2px); }
+  40% { transform: translate(5px, -3px); }
+  50% { transform: translate(-3px, 4px); }
+  60% { transform: translate(4px, -2px); }
+  70% { transform: translate(-2px, 3px); }
+  80% { transform: translate(3px, -3px); }
+  90% { transform: translate(-4px, 2px); }
+}
+.shake {
+  animation: screenShake 0.4s ease-in-out;
+}
+
+/* Glow burst overlay */
+#glowBurst {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  pointer-events: none;
+  z-index: 100;
+  opacity: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(0, 212, 255, 0.5), rgba(0, 100, 255, 0.2) 40%, transparent 65%);
+}
+#glowBurst.active {
+  animation: burstFade 0.8s ease-out forwards;
+}
+@keyframes burstFade {
+  0% { opacity: 0.9; }
+  100% { opacity: 0; }
+}
+
+/* Educational box */
+.edu-box {
+  background: rgba(212, 168, 67, 0.08);
+  border: 1px solid rgba(212, 168, 67, 0.3);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-top: 40px;
+  max-width: 750px;
+  margin-left: auto;
+  margin-right: auto;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.8s, transform 0.8s;
+}
+.edu-box.show {
+  opacity: 1;
+  transform: translateY(0);
+}
+.edu-box h3 {
+  font-family: 'Cinzel', serif;
+  color: #d4a843;
+  font-size: 1.2rem;
+  margin-bottom: 14px;
+  font-weight: 700;
+}
+.edu-box p {
+  line-height: 1.7;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+.edu-box .highlight {
+  color: #d4a843;
+  font-weight: 700;
+}
+.edu-box .formula {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 20px;
+  background: rgba(123, 47, 242, 0.15);
+  border: 1px solid rgba(123, 47, 242, 0.3);
+  border-radius: 8px;
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #fff;
+  letter-spacing: 1px;
+}
+
+/* Responsive */
+@media (min-width: 1200px) {
+  .tube-outer { width: 70px; height: 350px; border-radius: 35px; }
+  .chart-container { gap: 24px; }
+}
+@media (max-width: 1199px) and (min-width: 601px) {
+  .tube-outer { width: 55px; height: 320px; border-radius: 28px; }
+  .tube-outer::before { left: 4px; }
+  .chart-container { gap: 14px; }
+  .tube-emoji { font-size: 1.4rem; }
+  .tube-name { font-size: 0.65rem; }
+}
+@media (max-width: 600px) {
+  h1 { font-size: 2rem; }
+  .input-row { flex-direction: column; }
+  .input-section { padding: 24px 20px; }
+  .back-btn { top: 12px; left: 12px; padding: 8px 14px; font-size: 0.75rem; }
+  .tube-outer { width: 42px; height: 280px; border-radius: 21px; }
+  .tube-outer::before { left: 3px; width: 28%; }
+  .chart-container { gap: 8px; justify-content: flex-start; padding: 20px 5px 0; }
+  .tube-emoji { font-size: 1.2rem; }
+  .tube-name { font-size: 0.58rem; }
+  .tube-weight { font-size: 0.62rem; }
+  .tube-value { font-size: 0.65rem; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div id="glowBurst"></div>
+
+<a href="index.html" class="back-btn">
+  <span class="arrow">&larr;</span> Inicio
+</a>
+
+<div class="container" id="mainContainer">
+  <div class="title-section">
+    <h1>¿Cuánto Pesas en...?</h1>
+    <p class="subtitle">Descubre tu peso en otros mundos del universo</p>
+  </div>
+
+  <div class="input-section">
+    <div class="input-row">
+      <div class="input-group">
+        <label for="nameInput">Tu nombre (opcional)</label>
+        <input type="text" id="nameInput" placeholder="Ej: Alejandra">
+      </div>
+      <div class="input-group weight-input">
+        <label for="weightInput">Tu peso en la Tierra (kg)</label>
+        <input type="number" id="weightInput" placeholder="Ej: 45" min="0.1" max="999" step="0.1">
+      </div>
+      <button class="calc-btn" id="calcBtn" onclick="calculate()">Calcular</button>
+    </div>
+  </div>
+
+  <div id="results">
+    <h2 class="results-title" id="resultsTitle">Resultados</h2>
+    <div class="chart-container" id="chartContainer"></div>
+    <div class="edu-box" id="eduBox">
+      <h3>Masa vs. Peso: ¿Cuál es la diferencia?</h3>
+      <p id="eduText"></p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Starfield ──
+(function() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  const STAR_COUNT = 220;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      alpha: Math.random() * 0.7 + 0.3,
+      drift: (Math.random() - 0.5) * 0.12,
+      twinkleSpeed: Math.random() * 0.02 + 0.005,
+      twinklePhase: Math.random() * Math.PI * 2
+    });
+  }
+
+  function draw(time) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const s of stars) {
+      s.y += s.drift;
+      s.x += s.drift * 0.3;
+      if (s.y < -5) s.y = canvas.height + 5;
+      if (s.y > canvas.height + 5) s.y = -5;
+      if (s.x < -5) s.x = canvas.width + 5;
+      if (s.x > canvas.width + 5) s.x = -5;
+
+      const twinkle = Math.sin(time * s.twinkleSpeed + s.twinklePhase) * 0.3 + 0.7;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha * twinkle})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+})();
+
+// ── Planet data (in display order left to right) ──
+const planets = [
+  { id: 'moon',    name: 'Luna',                  emoji: '🌙', factor: 0.166,        fillClass: 'fill-moon',    fillPct: 15 },
+  { id: 'mars',    name: 'Marte',                 emoji: '🔴', factor: 0.378,        fillClass: 'fill-mars',    fillPct: 25 },
+  { id: 'earth',   name: 'Tierra',                emoji: '🌍', factor: 1.0,          fillClass: 'fill-earth',   fillPct: 45 },
+  { id: 'saturn',  name: 'Saturno',               emoji: '🪐', factor: 1.065,        fillClass: 'fill-saturn',  fillPct: 47 },
+  { id: 'jupiter', name: 'Júpiter',               emoji: '🟠', factor: 2.528,        fillClass: 'fill-jupiter', fillPct: 65 },
+  { id: 'sun',     name: 'Sol',                   emoji: '☀️',  factor: 27.9,         fillClass: 'fill-sun',     fillPct: 85 },
+  { id: 'neutron', name: 'E. de Neutrones',        emoji: '💫', factor: 200000000000, fillClass: 'fill-neutron', fillPct: 100 }
+];
+
+// ── Format weight ──
+function formatWeight(v, isNeutron) {
+  if (isNeutron && v >= 1e9) {
+    return v.toExponential(1).replace('+', '') + ' kg';
+  }
+  if (v >= 1000000) return v.toLocaleString('es-ES', { maximumFractionDigits: 0 }) + ' kg';
+  return v.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' kg';
+}
+
+// ── Count-up animation ──
+function animateCount(el, target, duration, isNeutron) {
+  const start = performance.now();
+  function tick(now) {
+    let progress = Math.min((now - start) / duration, 1);
+    progress = 1 - Math.pow(1 - progress, 3); // ease out cubic
+    el.textContent = formatWeight(target * progress, isNeutron);
+    if (progress < 1) requestAnimationFrame(tick);
+    else el.textContent = formatWeight(target, isNeutron);
+  }
+  requestAnimationFrame(tick);
+}
+
+// ── Create crack lines inside a container ──
+function createCrackOverlay(container) {
+  const overlay = document.createElement('div');
+  overlay.className = 'crack-overlay';
+  const cracks = [
+    { top: '20%', left: '30%', w: '50%', h: '2px', rot: '-25deg' },
+    { top: '35%', left: '15%', w: '70%', h: '1.5px', rot: '15deg' },
+    { top: '50%', left: '25%', w: '55%', h: '2px', rot: '-10deg' },
+    { top: '28%', left: '50%', w: '40%', h: '1.5px', rot: '50deg' },
+    { top: '60%', left: '10%', w: '60%', h: '1.5px', rot: '-35deg' },
+    { top: '45%', left: '40%', w: '35%', h: '1px', rot: '70deg' },
+  ];
+  cracks.forEach(c => {
+    const line = document.createElement('div');
+    line.className = 'crack-line';
+    line.style.cssText = `top:${c.top};left:${c.left};width:${c.w};height:${c.h};transform:rotate(${c.rot});position:absolute;background:rgba(255,255,255,0.85);box-shadow:0 0 4px rgba(200,230,255,0.8);`;
+    overlay.appendChild(line);
+  });
+  container.appendChild(overlay);
+  return overlay;
+}
+
+// ── Create shards on a container (column level, positioned over the tube area) ──
+function createShards(container) {
+  const shards = [];
+  // Shards are larger and more visible, with bigger flight distances
+  const configs = [
+    { top: '10%', left: '-10px', w: 20, h: 25, clip: 'polygon(0 0, 100% 30%, 60% 100%)', tx: '-120px', ty: '-160px', rot: '-180deg' },
+    { top: '20%', left: '50px', w: 18, h: 22, clip: 'polygon(50% 0, 100% 100%, 0 80%)', tx: '130px', ty: '-140px', rot: '220deg' },
+    { top: '35%', left: '-5px', w: 22, h: 16, clip: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)', tx: '-140px', ty: '-60px', rot: '-150deg' },
+    { top: '45%', left: '55px', w: 16, h: 26, clip: 'polygon(30% 0, 100% 20%, 70% 100%, 0 80%)', tx: '150px', ty: '50px', rot: '190deg' },
+    { top: '55%', left: '0px', w: 20, h: 15, clip: 'polygon(0 0, 100% 40%, 50% 100%)', tx: '-130px', ty: '110px', rot: '-200deg' },
+    { top: '65%', left: '60px', w: 17, h: 20, clip: 'polygon(20% 0, 100% 0, 80% 100%, 0 70%)', tx: '120px', ty: '130px', rot: '160deg' },
+    { top: '25%', left: '25px', w: 19, h: 15, clip: 'polygon(0 30%, 100% 0, 70% 100%)', tx: '-70px', ty: '-180px', rot: '-240deg' },
+    { top: '50%', left: '30px', w: 14, h: 22, clip: 'polygon(50% 0, 100% 60%, 30% 100%, 0 40%)', tx: '80px', ty: '150px', rot: '270deg' },
+    { top: '15%', left: '65px', w: 16, h: 14, clip: 'polygon(0 0, 100% 50%, 50% 100%)', tx: '140px', ty: '-110px', rot: '-130deg' },
+    { top: '72%', left: '15px', w: 20, h: 18, clip: 'polygon(20% 0, 100% 20%, 80% 100%, 0 80%)', tx: '-100px', ty: '170px', rot: '200deg' },
+    { top: '30%', left: '5px', w: 15, h: 20, clip: 'polygon(0 0, 80% 0, 100% 100%, 20% 80%)', tx: '-160px', ty: '-30px', rot: '-260deg' },
+    { top: '60%', left: '45px', w: 18, h: 14, clip: 'polygon(10% 0, 100% 20%, 90% 100%, 0 70%)', tx: '110px', ty: '90px', rot: '300deg' },
+  ];
+  configs.forEach(c => {
+    const shard = document.createElement('div');
+    shard.className = 'shard';
+    shard.style.cssText = `top:${c.top};left:${c.left};width:${c.w}px;height:${c.h}px;clip-path:${c.clip};--tx:${c.tx};--ty:${c.ty};--rot:${c.rot};`;
+    container.appendChild(shard);
+    shards.push(shard);
+  });
+  return shards;
+}
+
+// ── Build the chart ──
+function buildChart() {
+  const container = document.getElementById('chartContainer');
+  container.innerHTML = '';
+
+  planets.forEach(p => {
+    const col = document.createElement('div');
+    col.className = 'tube-column';
+    col.id = 'col-' + p.id;
+
+    // Value above tube
+    const valAbove = document.createElement('div');
+    valAbove.className = 'tube-value';
+    valAbove.id = 'val-above-' + p.id;
+    col.appendChild(valAbove);
+
+    // Glass tube
+    const tube = document.createElement('div');
+    tube.className = 'tube-outer' + (p.id === 'earth' ? ' earth-tube' : '');
+    tube.id = 'tube-' + p.id;
+
+    // Fill
+    const fill = document.createElement('div');
+    fill.className = 'tube-fill ' + p.fillClass;
+    fill.id = 'fill-' + p.id;
+    tube.appendChild(fill);
+
+    // Neutron star extras
+    if (p.id === 'neutron') {
+      // Cracks go inside the tube (they're on the glass)
+      const crackOverlay = createCrackOverlay(tube);
+      crackOverlay.id = 'crack-overlay';
+    }
+
+    col.appendChild(tube);
+
+    // Shards and spill canvas go on the COLUMN so they aren't clipped
+    if (p.id === 'neutron') {
+      col.style.overflow = 'visible';
+
+      // Canvas for fluid spill animation
+      const spillCanvas = document.createElement('canvas');
+      spillCanvas.className = 'spill-canvas';
+      spillCanvas.id = 'spillCanvas';
+      col.appendChild(spillCanvas);
+
+      // Glass shards
+      const shards = createShards(col);
+      shards.forEach((s, i) => s.id = 'shard-' + i);
+    }
+
+    // Label below
+    const label = document.createElement('div');
+    label.className = 'tube-label';
+    label.innerHTML = `
+      <span class="tube-emoji">${p.emoji}</span>
+      <span class="tube-name">${p.name}</span>
+      <span class="tube-weight" id="weight-${p.id}"></span>
+    `;
+    col.appendChild(label);
+
+    container.appendChild(col);
+  });
+}
+
+// ── Neutron star shatter sequence ──
+function triggerShatter() {
+  const tube = document.getElementById('tube-neutron');
+  const col = document.getElementById('col-neutron');
+  const mainContainer = document.getElementById('mainContainer');
+
+  // Step 1: Cracks appear on the glass
+  const crackOverlay = document.getElementById('crack-overlay');
+  crackOverlay.classList.add('visible');
+
+  // Step 2: Shatter after brief pause
+  setTimeout(() => {
+    // The glass breaks — hide border and background, allow overflow
+    tube.style.borderColor = 'transparent';
+    tube.style.background = 'transparent';
+    tube.style.overflow = 'visible';
+    // Hide the shine pseudo-element by making tube transparent
+    tube.classList.add('shattered');
+
+    // Animate shards outward (they're on the column, not the tube)
+    const shardEls = col.querySelectorAll('.shard');
+    shardEls.forEach(s => s.classList.add('animate'));
+
+    // Hide cracks with the glass
+    setTimeout(() => { crackOverlay.style.opacity = '0'; }, 300);
+
+    // Start canvas fluid spill animation
+    startSpillAnimation();
+
+    // Screen shake
+    mainContainer.classList.add('shake');
+    setTimeout(() => mainContainer.classList.remove('shake'), 500);
+
+    // Blue glow burst
+    const burst = document.getElementById('glowBurst');
+    burst.classList.add('active');
+    setTimeout(() => burst.classList.remove('active'), 1000);
+
+    // Make neutron weight huge and glowing
+    const weightEl = document.getElementById('weight-neutron');
+    weightEl.classList.add('neutron-huge');
+
+  }, 400);
+}
+
+// ── FLUID SPILL ANIMATION (canvas-based) ──
+let spillAnimId = null;
+function startSpillAnimation() {
+  const canvas = document.getElementById('spillCanvas');
+  if (!canvas) return;
+  const col = document.getElementById('col-neutron');
+  const tubeEl = document.getElementById('tube-neutron');
+
+  // Size canvas to column + extra space
+  const dpr = window.devicePixelRatio || 1;
+  const cw = col.offsetWidth + 120;
+  const ch = col.offsetHeight + 40;
+  canvas.width = cw * dpr;
+  canvas.height = ch * dpr;
+  canvas.style.width = cw + 'px';
+  canvas.style.height = ch + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Tube geometry relative to canvas (canvas is offset -60px left from col)
+  const offsetX = 60;
+  const tubeX = tubeEl.offsetLeft + offsetX;
+  const tubeY = tubeEl.offsetTop;
+  const tubeW = tubeEl.offsetWidth;
+  const tubeH = tubeEl.offsetHeight;
+  const tubeR = tubeW / 2; // border-radius of tube
+  const tubeCX = tubeX + tubeW / 2;
+
+  // Define drip/flow paths: liquid flows over the rim, hugs the outside of the tube, pools at bottom
+  // Each flow has: side ('left' or 'right'), startDelay, speed
+  const flows = [
+    { side: 'left', delay: 0, speed: 3.5, width: 12, offset: 0 },
+    { side: 'right', delay: 150, speed: 3.0, width: 10, offset: 0 },
+    { side: 'left', delay: 400, speed: 2.5, width: 8, offset: 8 },
+    { side: 'right', delay: 300, speed: 2.8, width: 9, offset: 6 },
+  ];
+
+  const flowStates = flows.map(f => ({
+    ...f,
+    progress: 0, // 0 = not started, up to tubeH = reached bottom
+    started: false,
+    driplets: [],
+  }));
+
+  // Puddle state
+  let puddleRadius = 0;
+  const maxPuddleRadius = 70;
+  const puddleY = tubeY + tubeH + 5;
+
+  const startTime = performance.now();
+  let drips = []; // free-falling drip particles
+
+  function draw(now) {
+    const elapsed = now - startTime;
+    ctx.clearRect(0, 0, cw, ch);
+
+    // Draw each flow
+    for (const f of flowStates) {
+      if (elapsed < f.delay) continue;
+      f.started = true;
+      const flowElapsed = elapsed - f.delay;
+
+      // Progress: how far down the flow has reached (pixels from top of tube)
+      f.progress = Math.min(flowElapsed * f.speed * 0.06, tubeH + 10);
+
+      // The flow path: starts at tube top (rim), goes straight down along the outside
+      const isLeft = f.side === 'left';
+      const edgeX = isLeft ? (tubeX - 2 - f.offset) : (tubeX + tubeW + 2 + f.offset);
+
+      // Draw the flowing stream
+      const streamTop = tubeY + tubeR * 0.3; // start slightly below the rim curve
+      const streamBottom = tubeY + f.progress;
+
+      if (f.progress > 5) {
+        // Rim overflow — small bulge at the top
+        const rimX = isLeft ? (tubeX + 4 + f.offset) : (tubeX + tubeW - 4 - f.offset);
+        const rimGrad = ctx.createLinearGradient(rimX, streamTop - 5, edgeX, streamTop + 10);
+        rimGrad.addColorStop(0, 'rgba(0, 212, 255, 0.7)');
+        rimGrad.addColorStop(1, 'rgba(0, 190, 255, 0.5)');
+        ctx.fillStyle = rimGrad;
+        ctx.beginPath();
+        ctx.ellipse(isLeft ? tubeX : tubeX + tubeW, streamTop, 10 + f.width / 2, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Main stream down the side
+        const grad = ctx.createLinearGradient(0, streamTop, 0, streamBottom);
+        grad.addColorStop(0, 'rgba(0, 212, 255, 0.8)');
+        grad.addColorStop(0.5, 'rgba(0, 195, 255, 0.65)');
+        grad.addColorStop(1, 'rgba(0, 180, 255, 0.4)');
+        ctx.fillStyle = grad;
+
+        // Wavy stream path
+        ctx.beginPath();
+        const halfW = f.width / 2;
+        ctx.moveTo(edgeX - halfW, streamTop);
+        // Left edge going down with slight wobble
+        for (let y = streamTop; y <= Math.min(streamBottom, puddleY); y += 4) {
+          const wobble = Math.sin(y * 0.05 + elapsed * 0.003 + f.delay) * 1.5;
+          ctx.lineTo(edgeX - halfW + wobble, y);
+        }
+        // Right edge going back up
+        for (let y = Math.min(streamBottom, puddleY); y >= streamTop; y -= 4) {
+          const wobble = Math.sin(y * 0.05 + elapsed * 0.003 + f.delay + 1) * 1.5;
+          ctx.lineTo(edgeX + halfW + wobble, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+
+        // Glow on stream
+        ctx.shadowColor = 'rgba(0, 212, 255, 0.4)';
+        ctx.shadowBlur = 8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        // Drip at the leading edge if still flowing
+        if (f.progress < tubeH) {
+          const dripY = streamBottom;
+          const dripGrad = ctx.createRadialGradient(edgeX, dripY, 0, edgeX, dripY, f.width * 0.8);
+          dripGrad.addColorStop(0, 'rgba(0, 220, 255, 0.8)');
+          dripGrad.addColorStop(1, 'rgba(0, 200, 255, 0)');
+          ctx.fillStyle = dripGrad;
+          ctx.beginPath();
+          ctx.ellipse(edgeX, dripY, f.width * 0.6, f.width * 0.9, 0, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // When stream reaches bottom, start growing puddle
+        if (f.progress >= tubeH) {
+          puddleRadius = Math.min(puddleRadius + 0.3, maxPuddleRadius);
+
+          // Occasionally spawn drip particles
+          if (Math.random() < 0.15) {
+            drips.push({
+              x: edgeX + (Math.random() - 0.5) * f.width,
+              y: puddleY - 3,
+              vx: (Math.random() - 0.5) * 1.5,
+              vy: -Math.random() * 1.5 - 0.5,
+              life: 1,
+              r: Math.random() * 2 + 1,
+            });
+          }
+        }
+      }
+    }
+
+    // Draw puddle
+    if (puddleRadius > 2) {
+      const puddleGrad = ctx.createRadialGradient(tubeCX, puddleY, 0, tubeCX, puddleY, puddleRadius);
+      puddleGrad.addColorStop(0, 'rgba(0, 212, 255, 0.7)');
+      puddleGrad.addColorStop(0.4, 'rgba(0, 195, 255, 0.45)');
+      puddleGrad.addColorStop(0.7, 'rgba(0, 180, 255, 0.2)');
+      puddleGrad.addColorStop(1, 'rgba(0, 170, 255, 0)');
+      ctx.fillStyle = puddleGrad;
+      ctx.beginPath();
+      ctx.ellipse(tubeCX, puddleY + 3, puddleRadius, puddleRadius * 0.3, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Puddle glow
+      ctx.shadowColor = 'rgba(0, 212, 255, 0.3)';
+      ctx.shadowBlur = 15;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Subtle ripple rings in puddle
+      const rippleTime = elapsed * 0.002;
+      for (let i = 0; i < 2; i++) {
+        const rippleR = ((rippleTime + i * 0.5) % 1) * puddleRadius;
+        const rippleA = 0.2 * (1 - rippleR / puddleRadius);
+        if (rippleA > 0.01) {
+          ctx.strokeStyle = `rgba(150, 230, 255, ${rippleA})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.ellipse(tubeCX, puddleY + 3, rippleR, rippleR * 0.3, 0, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw and update drip particles (splashes)
+    for (let i = drips.length - 1; i >= 0; i--) {
+      const d = drips[i];
+      d.x += d.vx;
+      d.y += d.vy;
+      d.vy += 0.08;
+      d.life -= 0.025;
+      if (d.life <= 0) { drips.splice(i, 1); continue; }
+      ctx.globalAlpha = d.life * 0.7;
+      ctx.fillStyle = '#00d4ff';
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r * d.life, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Keep animating for ~5 seconds, then settle
+    if (elapsed < 6000 || drips.length > 0) {
+      spillAnimId = requestAnimationFrame(draw);
+    }
+  }
+
+  spillAnimId = requestAnimationFrame(draw);
+}
+
+// ── CALCULATE ──
+function calculate() {
+  const weightVal = parseFloat(document.getElementById('weightInput').value);
+  if (!weightVal || weightVal <= 0) {
+    const input = document.getElementById('weightInput');
+    input.style.borderColor = '#e74c3c';
+    input.focus();
+    setTimeout(() => { input.style.borderColor = ''; }, 1500);
+    return;
+  }
+
+  const nameVal = document.getElementById('nameInput').value.trim();
+  const resultsDiv = document.getElementById('results');
+  const titleEl = document.getElementById('resultsTitle');
+
+  titleEl.textContent = nameVal ? `Resultados para ${nameVal}` : 'Resultados';
+
+  // Build fresh chart
+  buildChart();
+  resultsDiv.classList.add('visible');
+
+  // Scroll to results
+  setTimeout(() => {
+    resultsDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
+
+  // Animation timing per planet
+  const durations = {
+    moon: 800,
+    mars: 1000,
+    earth: 1200,
+    saturn: 1250,
+    jupiter: 1500,
+    sun: 2000,
+    neutron: 1000
+  };
+  const delays = {
+    moon: 0,
+    mars: 50,
+    earth: 100,
+    saturn: 150,
+    jupiter: 200,
+    sun: 300,
+    neutron: 500
+  };
+
+  planets.forEach(p => {
+    const weight = weightVal * p.factor;
+    const isNeutron = p.id === 'neutron';
+    const delay = delays[p.id];
+    const duration = durations[p.id];
+
+    setTimeout(() => {
+      // Fill the tube
+      const fill = document.getElementById('fill-' + p.id);
+      fill.style.transitionDuration = duration + 'ms';
+      fill.style.height = p.fillPct + '%';
+      if (p.fillPct >= 95) fill.classList.add('full-height');
+
+      // Count-up for weight below
+      const weightEl = document.getElementById('weight-' + p.id);
+      animateCount(weightEl, weight, duration, isNeutron);
+
+      // Show value above tube
+      const valAbove = document.getElementById('val-above-' + p.id);
+      setTimeout(() => {
+        valAbove.textContent = formatWeight(weight, isNeutron);
+        valAbove.classList.add('visible');
+      }, duration * 0.7);
+
+      // Neutron star: shatter after fill completes
+      if (isNeutron) {
+        setTimeout(() => {
+          triggerShatter();
+        }, duration + 300);
+      }
+    }, delay);
+  });
+
+  // Educational box appears after all animations
+  const totalDelay = 500 + 1000 + 300 + 800 + 500; // neutron delay + fill + pause + shatter + buffer
+  setTimeout(() => {
+    const eduBox = document.getElementById('eduBox');
+    const massStr = weightVal.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+    document.getElementById('eduText').innerHTML = `
+      Tu <span class="highlight">MASA</span> es siempre la misma: <span class="highlight">${massStr} kg</span>.
+      La masa es la cantidad de materia en tu cuerpo y no cambia sin importar dónde estés en el universo.<br><br>
+      Tu <span class="highlight">PESO</span> cambia porque depende de la <span class="highlight">gravedad</span> de cada lugar.
+      En la Luna pesas muy poco porque su gravedad es débil. En una estrella de neutrones, la gravedad es tan enorme
+      que te aplastaría al instante.<br><br>
+      <span class="formula">Peso = Masa × Gravedad</span>
+    `;
+    eduBox.classList.add('show');
+  }, totalDelay);
+}
+
+// Enter key triggers calculation
+document.getElementById('weightInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') calculate();
+});
+document.getElementById('nameInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') calculate();
+});
+</script>
+</body>
+</html>

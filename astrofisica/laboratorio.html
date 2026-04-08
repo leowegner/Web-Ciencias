@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Laboratorio del Astrofísico</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow-x:hidden;font-family:'Inter',sans-serif;color:#fff;background:#0a0e27;}
+
+/* ── Background ── */
+#starfield{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;}
+.bg-gradient{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;
+  background:linear-gradient(160deg,#0a0e27 0%,#1a1040 40%,#2d1b69 100%);}
+.nebula{position:fixed;border-radius:50%;filter:blur(120px);opacity:.18;z-index:0;pointer-events:none;}
+.nebula.n1{width:600px;height:600px;background:radial-gradient(circle,#c74bdb,transparent 70%);top:-150px;right:-100px;}
+.nebula.n2{width:500px;height:500px;background:radial-gradient(circle,#e06090,transparent 70%);bottom:-120px;left:-80px;}
+.nebula.n3{width:400px;height:400px;background:radial-gradient(circle,#7b2ff2,transparent 70%);top:40%;left:50%;}
+
+/* ── Layout ── */
+.main-content{position:relative;z-index:1;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 30px 60px;}
+
+/* ── Back button ── */
+.back-btn{position:fixed;top:24px;left:28px;z-index:1000;display:flex;align-items:center;gap:8px;
+  padding:10px 22px;border-radius:30px;border:1.5px solid rgba(212,168,67,.35);
+  background:rgba(10,14,39,.7);backdrop-filter:blur(12px);color:#d4a843;
+  font-family:'Cinzel',serif;font-size:.95rem;font-weight:700;text-decoration:none;
+  transition:all .35s ease;cursor:pointer;}
+.back-btn:hover{background:rgba(212,168,67,.15);border-color:#d4a843;transform:translateX(-3px);box-shadow:0 0 20px rgba(212,168,67,.25);}
+.back-btn .arrow{font-size:1.2rem;transition:transform .3s;}
+.back-btn:hover .arrow{transform:translateX(-4px);}
+
+/* ── Title ── */
+.lab-title{font-family:'Cinzel',serif;font-size:clamp(2rem,5vw,3.8rem);font-weight:900;
+  color:#d4a843;text-align:center;margin-top:30px;margin-bottom:12px;
+  text-shadow:0 0 40px rgba(212,168,67,.5),0 0 80px rgba(212,168,67,.25);
+  animation:titleGlow 3s ease-in-out infinite alternate,titleEntry 1.2s ease-out both;}
+@keyframes titleGlow{0%{text-shadow:0 0 30px rgba(212,168,67,.4),0 0 60px rgba(212,168,67,.2);}
+  100%{text-shadow:0 0 50px rgba(212,168,67,.7),0 0 100px rgba(212,168,67,.35),0 0 150px rgba(212,168,67,.15);}}
+@keyframes titleEntry{0%{opacity:0;transform:translateY(-30px) scale(.92);filter:blur(8px);}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0);}}
+.subtitle{font-family:'Inter',sans-serif;font-size:clamp(1rem,2vw,1.3rem);font-weight:300;
+  color:rgba(255,255,255,.7);text-align:center;margin-bottom:50px;
+  animation:fadeUp .8s ease-out .4s both;}
+@keyframes fadeUp{0%{opacity:0;transform:translateY(15px);}100%{opacity:1;transform:translateY(0);}}
+
+/* ── Tool cards grid ── */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:36px;
+  max-width:1200px;width:100%;padding:0 10px;}
+.tool-card{position:relative;background:linear-gradient(145deg,rgba(30,20,70,.7),rgba(15,10,45,.8));
+  border:1.5px solid rgba(123,47,242,.3);border-radius:24px;padding:44px 36px 40px;
+  cursor:pointer;transition:all .45s cubic-bezier(.23,1,.32,1);overflow:hidden;
+  backdrop-filter:blur(10px);
+  animation:cardEntry .7s ease-out both;}
+.tool-card:nth-child(1){animation-delay:.5s;}
+.tool-card:nth-child(2){animation-delay:.7s;}
+.tool-card:nth-child(3){animation-delay:.9s;}
+@keyframes cardEntry{0%{opacity:0;transform:translateY(50px) scale(.93);}100%{opacity:1;transform:translateY(0) scale(1);}}
+.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;border-radius:24px;
+  background:radial-gradient(ellipse at 30% 0%,rgba(123,47,242,.12),transparent 60%);pointer-events:none;}
+.tool-card::after{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(123,47,242,.08),transparent 50%);
+  pointer-events:none;opacity:0;transition:opacity .4s;}
+.tool-card:hover::after{opacity:1;}
+.tool-card:hover{transform:translateY(-10px) scale(1.02);
+  border-color:rgba(123,47,242,.6);
+  box-shadow:0 20px 60px rgba(123,47,242,.2),0 0 40px rgba(123,47,242,.1);}
+.card-icon{font-size:3.8rem;margin-bottom:18px;display:block;
+  filter:drop-shadow(0 0 15px rgba(212,168,67,.4));}
+.card-title{font-family:'Cinzel',serif;font-size:1.55rem;font-weight:700;color:#d4a843;margin-bottom:12px;
+  text-shadow:0 0 20px rgba(212,168,67,.3);}
+.card-desc{font-size:1rem;line-height:1.65;color:rgba(255,255,255,.75);font-weight:300;}
+.card-cta{display:inline-flex;align-items:center;gap:6px;margin-top:20px;padding:10px 24px;
+  border-radius:20px;border:1px solid rgba(212,168,67,.3);background:rgba(212,168,67,.08);
+  color:#d4a843;font-weight:600;font-size:.9rem;transition:all .3s;}
+.tool-card:hover .card-cta{background:rgba(212,168,67,.18);border-color:#d4a843;box-shadow:0 0 20px rgba(212,168,67,.15);}
+
+/* ── Overlay (shared) ── */
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;z-index:2000;
+  display:flex;align-items:center;justify-content:center;
+  background:rgba(5,5,20,.92);backdrop-filter:blur(20px);
+  opacity:0;pointer-events:none;transition:opacity .45s ease;}
+.overlay.active{opacity:1;pointer-events:all;}
+.overlay-panel{position:relative;width:min(96vw,1100px);max-height:92vh;overflow-y:auto;
+  background:linear-gradient(160deg,rgba(25,15,60,.95),rgba(10,14,39,.97));
+  border:1.5px solid rgba(123,47,242,.35);border-radius:28px;padding:44px 48px 48px;
+  transform:scale(.88);transition:transform .45s cubic-bezier(.23,1,.32,1);
+  box-shadow:0 40px 100px rgba(0,0,0,.6),0 0 60px rgba(123,47,242,.1);}
+.overlay.active .overlay-panel{transform:scale(1);}
+.overlay-panel::-webkit-scrollbar{width:6px;}
+.overlay-panel::-webkit-scrollbar-thumb{background:rgba(123,47,242,.4);border-radius:3px;}
+.close-btn{position:absolute;top:18px;right:22px;width:44px;height:44px;border-radius:50%;
+  border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);
+  color:#fff;font-size:1.5rem;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .3s;z-index:10;}
+.close-btn:hover{background:rgba(255,80,80,.2);border-color:rgba(255,80,80,.5);transform:rotate(90deg);}
+.overlay-title{font-family:'Cinzel',serif;font-size:clamp(1.5rem,3.5vw,2.4rem);font-weight:700;
+  color:#d4a843;margin-bottom:8px;text-shadow:0 0 30px rgba(212,168,67,.4);}
+.overlay-subtitle{font-size:1.05rem;color:rgba(255,255,255,.65);margin-bottom:28px;font-weight:300;line-height:1.6;}
+
+/* ── Spectrograph ── */
+#spectCanvas{width:100%;border-radius:16px;background:#06040f;margin-bottom:20px;}
+.star-btns{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;}
+.star-btn{padding:10px 24px;border-radius:18px;border:1.5px solid rgba(123,47,242,.35);
+  background:rgba(123,47,242,.1);color:#fff;font-family:'Inter',sans-serif;font-weight:600;
+  font-size:.92rem;cursor:pointer;transition:all .3s;}
+.star-btn:hover,.star-btn.active{background:rgba(123,47,242,.3);border-color:#7b2ff2;
+  box-shadow:0 0 20px rgba(123,47,242,.25);}
+.detected-elements{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;margin-bottom:10px;}
+.element-tag{padding:8px 18px;border-radius:14px;font-weight:600;font-size:.88rem;
+  border:1px solid;animation:tagPop .4s ease-out both;}
+@keyframes tagPop{0%{opacity:0;transform:scale(.8);}100%{opacity:1;transform:scale(1);}}
+.element-tag.h{background:rgba(100,180,255,.15);border-color:rgba(100,180,255,.4);color:#64b4ff;}
+.element-tag.he{background:rgba(255,220,80,.15);border-color:rgba(255,220,80,.4);color:#ffdc50;}
+.element-tag.fe{background:rgba(255,120,80,.15);border-color:rgba(255,120,80,.4);color:#ff7850;}
+.element-tag.na{background:rgba(255,180,50,.15);border-color:rgba(255,180,50,.4);color:#ffb432;}
+.element-tag.ca{background:rgba(200,100,255,.15);border-color:rgba(200,100,255,.4);color:#c864ff;}
+.element-tag.mg{background:rgba(80,220,180,.15);border-color:rgba(80,220,180,.4);color:#50dcb4;}
+.info-box{background:rgba(123,47,242,.08);border:1px solid rgba(123,47,242,.25);border-radius:16px;
+  padding:18px 24px;margin-top:18px;font-size:.97rem;line-height:1.65;color:rgba(255,255,255,.8);}
+.info-box strong{color:#d4a843;}
+
+/* ── Light Curves ── */
+.lc-container{display:flex;flex-direction:column;align-items:center;gap:20px;}
+.transit-visual{position:relative;width:240px;height:240px;margin:0 auto;}
+.transit-star{position:absolute;top:50%;left:50%;width:100px;height:100px;
+  background:radial-gradient(circle,#fff8e0,#f0c040 40%,#c08020 80%,transparent);
+  border-radius:50%;transform:translate(-50%,-50%);
+  box-shadow:0 0 40px rgba(240,192,64,.6),0 0 80px rgba(240,192,64,.3);}
+.transit-planet{position:absolute;top:50%;width:28px;height:28px;
+  background:radial-gradient(circle at 35% 35%,#5a7a9a,#2a3a4a);border-radius:50%;
+  transform:translate(-50%,-50%);box-shadow:0 0 10px rgba(0,0,0,.5);z-index:2;}
+#lcCanvas{width:100%;max-width:700px;border-radius:14px;background:rgba(6,4,15,.8);border:1px solid rgba(123,47,242,.2);}
+.new-star-btn{padding:12px 30px;border-radius:20px;border:1.5px solid #d4a843;
+  background:rgba(212,168,67,.1);color:#d4a843;font-family:'Cinzel',serif;font-weight:700;
+  font-size:1rem;cursor:pointer;transition:all .3s;}
+.new-star-btn:hover{background:rgba(212,168,67,.2);box-shadow:0 0 25px rgba(212,168,67,.25);transform:scale(1.05);}
+
+/* ── Orbit Simulator ── */
+#orbitCanvas{width:100%;border-radius:16px;background:#06040f;border:1px solid rgba(123,47,242,.15);}
+.slider-row{display:flex;align-items:center;gap:18px;margin:20px 0 10px;flex-wrap:wrap;}
+.slider-label{font-family:'Cinzel',serif;font-weight:700;color:#d4a843;font-size:1.05rem;white-space:nowrap;}
+.mass-slider{-webkit-appearance:none;appearance:none;flex:1;min-width:200px;height:8px;border-radius:4px;
+  background:linear-gradient(90deg,rgba(123,47,242,.3),rgba(212,168,67,.5));outline:none;}
+.mass-slider::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;
+  background:radial-gradient(circle,#d4a843,#a07828);border:2px solid #fff;cursor:pointer;
+  box-shadow:0 0 15px rgba(212,168,67,.5);}
+.mass-value{font-weight:700;font-size:1.1rem;color:#d4a843;min-width:70px;text-align:center;}
+
+/* ── Responsive ── */
+@media(max-width:700px){
+  .overlay-panel{padding:28px 20px 32px;}
+  .tools-grid{grid-template-columns:1fr;gap:24px;}
+  .back-btn{top:14px;left:14px;padding:8px 16px;font-size:.82rem;}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-gradient"></div>
+<div class="nebula n1"></div>
+<div class="nebula n2"></div>
+<div class="nebula n3"></div>
+<canvas id="starfield"></canvas>
+
+<a href="index.html" class="back-btn"><span class="arrow">&#8592;</span> Volver</a>
+
+<div class="main-content">
+  <h1 class="lab-title">El Laboratorio del Astrofísico</h1>
+  <p class="subtitle">Selecciona un instrumento para explorar los secretos del universo</p>
+
+  <div class="tools-grid">
+    <!-- Spectrograph -->
+    <div class="tool-card" onclick="openOverlay('spectrograph')">
+      <span class="card-icon">🔬</span>
+      <h2 class="card-title">Espectrógrafo</h2>
+      <p class="card-desc">Descompone la luz de las estrellas para descubrir de qué elementos están hechas. Cada elemento deja una huella única.</p>
+      <span class="card-cta">Analizar luz &#8594;</span>
+    </div>
+    <!-- Light Curves -->
+    <div class="tool-card" onclick="openOverlay('lightcurve')">
+      <span class="card-icon">📉</span>
+      <h2 class="card-title">Curvas de Luz</h2>
+      <p class="card-desc">Observa cómo el brillo de una estrella cambia cuando un planeta pasa frente a ella. ¡Así se descubren exoplanetas!</p>
+      <span class="card-cta">Observar tránsitos &#8594;</span>
+    </div>
+    <!-- Orbit Simulator -->
+    <div class="tool-card" onclick="openOverlay('orbits')">
+      <span class="card-icon">🪐</span>
+      <h2 class="card-title">Simulador de Órbitas</h2>
+      <p class="card-desc">Controla la masa de una estrella y observa cómo cambian las órbitas de sus planetas en tiempo real.</p>
+      <span class="card-cta">Simular órbitas &#8594;</span>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ SPECTROGRAPH OVERLAY ════════ -->
+<div class="overlay" id="ov-spectrograph">
+  <div class="overlay-panel">
+    <button class="close-btn" onclick="closeOverlay('spectrograph')">&times;</button>
+    <h2 class="overlay-title">🔬 Espectrógrafo Estelar</h2>
+    <p class="overlay-subtitle">Selecciona una estrella y observa cómo el prisma descompone su luz, revelando los elementos que contiene.</p>
+    <div class="star-btns">
+      <button class="star-btn active" onclick="selectStar(0)">⭐ Estrella Alfa</button>
+      <button class="star-btn" onclick="selectStar(1)">⭐ Estrella Beta</button>
+      <button class="star-btn" onclick="selectStar(2)">⭐ Estrella Gamma</button>
+    </div>
+    <canvas id="spectCanvas" width="1000" height="340"></canvas>
+    <div class="detected-elements" id="detectedEls"></div>
+    <div class="info-box">
+      <strong>¿Cómo funciona?</strong> Los astrofísicos analizan la luz de las estrellas haciéndola pasar por un prisma. Cada elemento químico absorbe colores específicos, dejando líneas oscuras en el espectro. Leyendo estas líneas, descubrimos de qué están hechas las estrellas, ¡sin necesidad de viajar hasta ellas!
+    </div>
+  </div>
+</div>
+
+<!-- ════════ LIGHT CURVE OVERLAY ════════ -->
+<div class="overlay" id="ov-lightcurve">
+  <div class="overlay-panel">
+    <button class="close-btn" onclick="closeOverlay('lightcurve')">&times;</button>
+    <h2 class="overlay-title">📉 Curvas de Luz</h2>
+    <p class="overlay-subtitle">Cuando un planeta pasa frente a su estrella, la luz disminuye. ¡Así descubrimos exoplanetas!</p>
+    <div class="lc-container">
+      <div class="transit-visual" id="transitVisual">
+        <div class="transit-star"></div>
+        <div class="transit-planet" id="transitPlanet"></div>
+      </div>
+      <canvas id="lcCanvas" width="700" height="280"></canvas>
+      <button class="new-star-btn" onclick="newLightCurve()">✨ Nueva Estrella</button>
+    </div>
+    <div class="info-box" style="margin-top:22px;">
+      <strong>Método del tránsito:</strong> Los telescopios como Kepler y TESS miden el brillo de miles de estrellas. Si el brillo baja periódicamente, ¡un planeta podría estar orbitando esa estrella! La profundidad de la caída nos dice el tamaño del planeta.
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ORBIT SIMULATOR OVERLAY ════════ -->
+<div class="overlay" id="ov-orbits">
+  <div class="overlay-panel">
+    <button class="close-btn" onclick="closeOverlay('orbits')">&times;</button>
+    <h2 class="overlay-title">🪐 Simulador de Órbitas</h2>
+    <p class="overlay-subtitle">La masa de una estrella determina la velocidad y forma de las órbitas de sus planetas.</p>
+    <canvas id="orbitCanvas" width="900" height="500"></canvas>
+    <div class="slider-row">
+      <span class="slider-label">Masa de la estrella:</span>
+      <input type="range" class="mass-slider" id="massSlider" min="20" max="200" value="100">
+      <span class="mass-value" id="massValue">1.0 M☉</span>
+    </div>
+    <div class="info-box">
+      <strong>Ley de gravitación:</strong> Cuanto mayor es la masa de la estrella, más fuerte es su gravedad. Los planetas cercanos orbitan más rápido, y al aumentar la masa, las órbitas se vuelven más rápidas y ajustadas. Estas mismas leyes de Newton y Kepler nos permiten calcular las masas de estrellas lejanas.
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   STARFIELD BACKGROUND
+   ══════════════════════════════════════ */
+(function(){
+  const c=document.getElementById('starfield'),ctx=c.getContext('2d');
+  let stars=[];const N=260;
+  function resize(){c.width=window.innerWidth;c.height=window.innerHeight;initStars();}
+  function initStars(){stars=[];for(let i=0;i<N;i++)stars.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.5+.3,a:Math.random()*.7+.3,dx:(Math.random()-.5)*.12,dy:(Math.random()-.5)*.08,twinkle:Math.random()*Math.PI*2});}
+  function draw(){ctx.clearRect(0,0,c.width,c.height);const t=Date.now()*.001;
+    stars.forEach(s=>{s.x+=s.dx;s.y+=s.dy;
+      if(s.x<0)s.x=c.width;if(s.x>c.width)s.x=0;if(s.y<0)s.y=c.height;if(s.y>c.height)s.y=0;
+      const a=s.a*(.7+.3*Math.sin(t*1.5+s.twinkle));
+      ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill();});
+    requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+})();
+
+/* ── Card hover glow tracking ── */
+document.querySelectorAll('.tool-card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{const r=card.getBoundingClientRect();
+    card.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%');
+    card.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');});
+});
+
+/* ── Overlay open/close ── */
+function openOverlay(id){
+  document.getElementById('ov-'+id).classList.add('active');
+  document.body.style.overflow='hidden';
+  if(id==='spectrograph')startSpectrograph();
+  if(id==='lightcurve')startLightCurve();
+  if(id==='orbits')startOrbits();
+}
+function closeOverlay(id){
+  document.getElementById('ov-'+id).classList.remove('active');
+  document.body.style.overflow='';
+  if(id==='spectrograph')stopSpectrograph();
+  if(id==='lightcurve')stopLightCurve();
+  if(id==='orbits')stopOrbits();
+}
+
+/* ══════════════════════════════════════
+   TOOL 1: SPECTROGRAPH
+   ══════════════════════════════════════ */
+const starData=[
+  {name:'Alfa',elements:[
+    {name:'Hidrógeno',cls:'h',lines:[.17,.28,.42,.53]},
+    {name:'Helio',cls:'he',lines:[.22,.60]},
+    {name:'Hierro',cls:'fe',lines:[.35,.47,.72,.81]}]},
+  {name:'Beta',elements:[
+    {name:'Hidrógeno',cls:'h',lines:[.17,.28,.42]},
+    {name:'Sodio',cls:'na',lines:[.50,.52]},
+    {name:'Magnesio',cls:'mg',lines:[.37,.65,.78]}]},
+  {name:'Gamma',elements:[
+    {name:'Calcio',cls:'ca',lines:[.15,.30]},
+    {name:'Helio',cls:'he',lines:[.22,.60]},
+    {name:'Hidrógeno',cls:'h',lines:[.17,.28,.42,.53]},
+    {name:'Hierro',cls:'fe',lines:[.47,.72]}]}
+];
+let currentStar=0,spectAnim=null,spectTime=0;
+
+function selectStar(i){
+  currentStar=i;spectTime=0;
+  document.querySelectorAll('.star-btn').forEach((b,j)=>b.classList.toggle('active',j===i));
+  updateDetected();
+}
+function updateDetected(){
+  const el=document.getElementById('detectedEls');el.innerHTML='';
+  starData[currentStar].elements.forEach((e,i)=>{
+    const tag=document.createElement('span');tag.className='element-tag '+e.cls;
+    tag.textContent='✓ '+e.name+' detectado';tag.style.animationDelay=i*.12+'s';el.appendChild(tag);});
+}
+function startSpectrograph(){spectTime=0;updateDetected();drawSpect();}
+function stopSpectrograph(){if(spectAnim)cancelAnimationFrame(spectAnim);spectAnim=null;}
+
+function drawSpect(){
+  const c=document.getElementById('spectCanvas'),ctx=c.getContext('2d');
+  const W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
+  spectTime=Math.min(spectTime+.018,1);
+  const t=spectTime;
+
+  // Prism
+  const px=220,py=H/2;
+  ctx.save();
+  // Incoming white beam
+  const beamStart=30;
+  const grad0=ctx.createLinearGradient(beamStart,0,px-40,0);
+  grad0.addColorStop(0,'rgba(255,255,255,0)');grad0.addColorStop(.3,'rgba(255,255,255,.9)');
+  grad0.addColorStop(1,'rgba(255,255,255,.95)');
+  ctx.fillStyle=grad0;ctx.beginPath();ctx.moveTo(beamStart,py-6);ctx.lineTo(px-40,py-3);
+  ctx.lineTo(px-40,py+3);ctx.lineTo(beamStart,py+6);ctx.fill();
+  // Glow on beam
+  ctx.shadowColor='rgba(255,255,255,.5)';ctx.shadowBlur=18;
+  ctx.fillStyle='rgba(255,255,255,.15)';ctx.fillRect(beamStart,py-8,px-40-beamStart,16);
+  ctx.shadowBlur=0;
+
+  // Prism shape
+  const ps=80;
+  ctx.beginPath();ctx.moveTo(px,py-ps/2);ctx.lineTo(px+ps*.87,py+ps/2);ctx.lineTo(px-ps*.87,py+ps/2);ctx.closePath();
+  const pg=ctx.createLinearGradient(px-ps,py-ps/2,px+ps,py+ps/2);
+  pg.addColorStop(0,'rgba(160,120,255,.25)');pg.addColorStop(.5,'rgba(200,180,255,.15)');pg.addColorStop(1,'rgba(120,80,220,.2)');
+  ctx.fillStyle=pg;ctx.fill();ctx.strokeStyle='rgba(200,180,255,.45)';ctx.lineWidth=2;ctx.stroke();
+  ctx.restore();
+
+  // Spectrum band
+  const sx=px+120,sy=40,sw=W-sx-40,sh=H-80;
+  const spread=Math.min(t*1.5,1);
+  if(spread>0){
+    const colors=['#ff0000','#ff4400','#ff8800','#ffcc00','#ffff00','#aaff00','#44ff00','#00ff44','#00ffaa','#00ffff','#0088ff','#0044ff','#2200ff','#4400cc','#6600aa'];
+    const bandH=sh*spread;const bandY=py-bandH/2;
+    for(let i=0;i<colors.length;i++){
+      const yy=bandY+bandH*i/colors.length;const hh=bandH/colors.length+1;
+      ctx.fillStyle=colors[i];ctx.globalAlpha=spread;ctx.fillRect(sx,yy,sw,hh);}
+    ctx.globalAlpha=1;
+
+    // Rainbow beams from prism to spectrum
+    const nRays=colors.length;
+    for(let i=0;i<nRays;i++){
+      const frac=i/(nRays-1);const yEnd=bandY+bandH*frac;
+      ctx.beginPath();ctx.moveTo(px+40,py);ctx.lineTo(sx,yEnd+bandH/nRays/2);
+      ctx.strokeStyle=colors[i];ctx.globalAlpha=.35*spread;ctx.lineWidth=3;ctx.stroke();}
+    ctx.globalAlpha=1;
+
+    // Absorption lines
+    if(t>.4){
+      const lineAlpha=Math.min((t-.4)*2.5,1);
+      starData[currentStar].elements.forEach(el=>{
+        el.lines.forEach(pos=>{
+          const ly=bandY+bandH*pos;
+          ctx.fillStyle=`rgba(0,0,0,${lineAlpha*.85})`;ctx.fillRect(sx,ly-1.5,sw,3);
+          ctx.fillStyle=`rgba(0,0,0,${lineAlpha*.3})`;ctx.fillRect(sx,ly-3,sw,6);});});
+    }
+
+    // Labels
+    ctx.fillStyle='rgba(255,255,255,.5)';ctx.font='12px Inter';ctx.textAlign='center';
+    if(spread>.5){
+      ctx.fillText('Rojo',sx+sw/2,bandY-6);ctx.fillText('Violeta',sx+sw/2,bandY+bandH+16);}
+  }
+
+  spectAnim=requestAnimationFrame(drawSpect);
+}
+
+/* ══════════════════════════════════════
+   TOOL 2: LIGHT CURVES
+   ══════════════════════════════════════ */
+let lcAnim=null,lcTime=0,lcPeriod=3.2,lcDepth=.18,lcSpeed=1;
+let lcPlanetPhase=0;
+
+function startLightCurve(){lcTime=0;lcPlanetPhase=0;generateLCParams();drawLC();}
+function stopLightCurve(){if(lcAnim)cancelAnimationFrame(lcAnim);lcAnim=null;}
+function newLightCurve(){lcTime=0;lcPlanetPhase=0;generateLCParams();}
+function generateLCParams(){
+  lcPeriod=2+Math.random()*3;
+  lcDepth=.08+Math.random()*.2;
+  lcSpeed=.6+Math.random()*.5;
+}
+
+function drawLC(){
+  const c=document.getElementById('lcCanvas'),ctx=c.getContext('2d');
+  const W=c.width,H=c.height;ctx.clearRect(0,0,W,H);
+
+  lcTime+=.012*lcSpeed;
+
+  // Graph area
+  const mx=60,my=30,gw=W-mx-20,gh=H-my-40;
+
+  // Axes
+  ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(mx,my);ctx.lineTo(mx,my+gh);ctx.lineTo(mx+gw,my+gh);ctx.stroke();
+  ctx.fillStyle='rgba(255,255,255,.45)';ctx.font='12px Inter';ctx.textAlign='center';
+  ctx.fillText('Tiempo',mx+gw/2,H-6);
+  ctx.save();ctx.translate(14,my+gh/2);ctx.rotate(-Math.PI/2);ctx.fillText('Brillo',0,0);ctx.restore();
+
+  // Grid lines
+  ctx.strokeStyle='rgba(255,255,255,.06)';
+  for(let i=0;i<5;i++){const yy=my+gh*i/4;ctx.beginPath();ctx.moveTo(mx,yy);ctx.lineTo(mx+gw,yy);ctx.stroke();}
+
+  // Light curve function
+  function brightness(t){
+    const phase=(t%lcPeriod)/lcPeriod;
+    const transitW=.08;
+    if(phase<transitW){const p=phase/transitW;return 1-lcDepth*Math.sin(p*Math.PI);}
+    return 1;
+  }
+
+  // Draw curve
+  const totalT=lcTime;const visibleWindow=8;
+  const startT=Math.max(0,totalT-visibleWindow);
+
+  ctx.beginPath();ctx.strokeStyle='#64b4ff';ctx.lineWidth=2.5;
+  ctx.shadowColor='rgba(100,180,255,.4)';ctx.shadowBlur=8;
+  let first=true;
+  for(let px=0;px<=gw;px++){
+    const t=startT+px/gw*visibleWindow;
+    if(t>totalT)break;
+    const b=brightness(t);
+    const x=mx+px;const y=my+gh*(1-(.3+b*.6));
+    if(first){ctx.moveTo(x,y);first=false;}else ctx.lineTo(x,y);
+  }
+  ctx.stroke();ctx.shadowBlur=0;
+
+  // Current brightness for planet position
+  const curB=brightness(totalT);
+  const phase=(totalT%lcPeriod)/lcPeriod;
+
+  // Update transit planet position
+  const planet=document.getElementById('transitPlanet');
+  if(planet){
+    // Planet moves across from right to left during transit
+    const cx=120; // center of visual
+    const orbitRadius=90;
+    // Map time to position: planet orbits around
+    const angle=phase*Math.PI*2;
+    const px2=cx+Math.sin(angle)*orbitRadius;
+    const py2=120+Math.cos(angle)*20; // slight y movement
+    planet.style.left=px2+'px';
+    planet.style.top=py2+'px';
+    planet.style.opacity=1;
+  }
+
+  // Baseline reference
+  ctx.setLineDash([5,5]);ctx.strokeStyle='rgba(212,168,67,.3)';ctx.lineWidth=1;
+  const baseY=my+gh*(1-.9);
+  ctx.beginPath();ctx.moveTo(mx,baseY);ctx.lineTo(mx+gw,baseY);ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle='rgba(212,168,67,.5)';ctx.font='11px Inter';ctx.textAlign='left';
+  ctx.fillText('Brillo máximo',mx+gw-90,baseY-5);
+
+  lcAnim=requestAnimationFrame(drawLC);
+}
+
+/* ══════════════════════════════════════
+   TOOL 3: ORBIT SIMULATOR
+   ══════════════════════════════════════ */
+let orbitAnim=null,orbitTime=0;
+const planets=[
+  {a:140,b:120,color:'#4a9eff',r:8,speed:1,angle:0,trail:[]},
+  {a:210,b:180,color:'#ff6a6a',r:10,speed:.55,angle:2,trail:[]},
+  {a:300,b:250,color:'#50dc96',r:7,speed:.3,angle:4.5,trail:[]}
+];
+let starMass=1;
+
+function startOrbits(){
+  orbitTime=0;planets.forEach(p=>{p.trail=[];});
+  document.getElementById('massSlider').value=100;
+  document.getElementById('massValue').textContent='1.0 M☉';
+  starMass=1;drawOrbits();
+}
+function stopOrbits(){if(orbitAnim)cancelAnimationFrame(orbitAnim);orbitAnim=null;}
+
+document.getElementById('massSlider').addEventListener('input',function(){
+  starMass=this.value/100;
+  document.getElementById('massValue').textContent=starMass.toFixed(1)+' M☉';
+  // Adjust orbits: higher mass = tighter + faster
+  const f=1/Math.sqrt(starMass);
+  planets[0].a=140*f;planets[0].b=120*f;
+  planets[1].a=210*f;planets[1].b=180*f;
+  planets[2].a=300*f;planets[2].b=250*f;
+});
+
+function drawOrbits(){
+  const c=document.getElementById('orbitCanvas'),ctx=c.getContext('2d');
+  const W=c.width,H=c.height,cx=W/2,cy=H/2;
+  ctx.clearRect(0,0,W,H);
+  orbitTime+=.016;
+
+  const speedMult=Math.pow(starMass,0.7);
+
+  // Orbit paths (faint)
+  planets.forEach(p=>{
+    ctx.beginPath();ctx.ellipse(cx,cy,p.a,p.b,0,0,Math.PI*2);
+    ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;ctx.stroke();
+  });
+
+  // Star glow
+  const starR=18+starMass*8;
+  const sg=ctx.createRadialGradient(cx,cy,0,cx,cy,starR*3);
+  sg.addColorStop(0,'rgba(255,248,220,.9)');sg.addColorStop(.2,'rgba(255,220,80,.6)');
+  sg.addColorStop(.5,'rgba(255,180,40,.15)');sg.addColorStop(1,'transparent');
+  ctx.fillStyle=sg;ctx.beginPath();ctx.arc(cx,cy,starR*3,0,Math.PI*2);ctx.fill();
+
+  // Star body
+  const sb=ctx.createRadialGradient(cx,cy,0,cx,cy,starR);
+  sb.addColorStop(0,'#fffde8');sb.addColorStop(.6,'#f0c840');sb.addColorStop(1,'#c09020');
+  ctx.fillStyle=sb;ctx.beginPath();ctx.arc(cx,cy,starR,0,Math.PI*2);ctx.fill();
+
+  // Planets
+  planets.forEach(p=>{
+    p.angle+=p.speed*speedMult*.025;
+    const x=cx+Math.cos(p.angle)*p.a;
+    const y=cy+Math.sin(p.angle)*p.b;
+
+    // Trail
+    p.trail.push({x,y});
+    if(p.trail.length>60)p.trail.shift();
+    if(p.trail.length>1){
+      for(let i=1;i<p.trail.length;i++){
+        const alpha=i/p.trail.length*.4;
+        ctx.beginPath();ctx.moveTo(p.trail[i-1].x,p.trail[i-1].y);ctx.lineTo(p.trail[i].x,p.trail[i].y);
+        ctx.strokeStyle=p.color.replace(')',`,${alpha})`).replace('rgb','rgba');
+        // Hex to rgba workaround
+        const r2=parseInt(p.color.slice(1,3),16),g2=parseInt(p.color.slice(3,5),16),b2=parseInt(p.color.slice(5,7),16);
+        ctx.strokeStyle=`rgba(${r2},${g2},${b2},${alpha})`;
+        ctx.lineWidth=p.r*.6;ctx.stroke();}
+    }
+
+    // Planet glow
+    const pg=ctx.createRadialGradient(x,y,0,x,y,p.r*2.5);
+    const r2=parseInt(p.color.slice(1,3),16),g2=parseInt(p.color.slice(3,5),16),b2=parseInt(p.color.slice(5,7),16);
+    pg.addColorStop(0,`rgba(${r2},${g2},${b2},.3)`);pg.addColorStop(1,'transparent');
+    ctx.fillStyle=pg;ctx.beginPath();ctx.arc(x,y,p.r*2.5,0,Math.PI*2);ctx.fill();
+
+    // Planet body
+    const pb=ctx.createRadialGradient(x-p.r*.3,y-p.r*.3,0,x,y,p.r);
+    pb.addColorStop(0,p.color);pb.addColorStop(1,`rgba(${r2*.5|0},${g2*.5|0},${b2*.5|0},1)`);
+    ctx.fillStyle=pb;ctx.beginPath();ctx.arc(x,y,p.r,0,Math.PI*2);ctx.fill();
+  });
+
+  // Planet labels
+  ctx.font='bold 11px Inter';ctx.textAlign='left';
+  const names=['Planeta 1','Planeta 2','Planeta 3'];
+  const labelColors=['#4a9eff','#ff6a6a','#50dc96'];
+  names.forEach((n,i)=>{
+    ctx.fillStyle=labelColors[i];ctx.fillText('● '+n,W-120,30+i*20);});
+
+  orbitAnim=requestAnimationFrame(drawOrbits);
+}
+
+/* ── Close on Escape ── */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    ['spectrograph','lightcurve','orbits'].forEach(id=>{
+      if(document.getElementById('ov-'+id).classList.contains('active'))closeOverlay(id);});}
+});
+
+/* ── Close on backdrop click ── */
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click',e=>{if(e.target===ov){
+    const id=ov.id.replace('ov-','');closeOverlay(id);}});
+});
+</script>
+</body>
+</html>
