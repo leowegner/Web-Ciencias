@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Analiza y Descubre</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(170deg, #0a0e27 0%, #1a1040 40%, #2d1b69 100%);
+  font-family: 'Inter', sans-serif;
+  color: #ffffff;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Nebula corner gradients */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+body::before {
+  top: -150px;
+  right: -150px;
+  background: radial-gradient(circle, rgba(200,50,150,0.12) 0%, transparent 70%);
+}
+body::after {
+  bottom: -200px;
+  left: -150px;
+  background: radial-gradient(circle, rgba(180,60,200,0.10) 0%, transparent 70%);
+}
+
+#starfield {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.container {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px 20px 60px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Back button */
+.back-btn {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255,255,255,0.6);
+  text-decoration: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  z-index: 10;
+}
+.back-btn:hover {
+  color: #d4a843;
+  border-color: rgba(212,168,67,0.4);
+  background: rgba(212,168,67,0.1);
+}
+.back-btn svg { width: 16px; height: 16px; }
+
+/* Title area */
+.title-area {
+  text-align: center;
+  margin-top: 50px;
+  margin-bottom: 10px;
+}
+.title {
+  font-family: 'Cinzel', serif;
+  font-size: 42px;
+  font-weight: 900;
+  color: #d4a843;
+  text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.2);
+  letter-spacing: 2px;
+}
+.subtitle {
+  font-size: 16px;
+  color: rgba(255,255,255,0.65);
+  margin-top: 8px;
+  font-weight: 300;
+}
+
+/* Progress dots */
+.progress-dots {
+  display: flex;
+  gap: 14px;
+  margin: 20px 0 30px;
+  justify-content: center;
+}
+.progress-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid rgba(212,168,67,0.4);
+  background: transparent;
+  transition: all 0.4s ease;
+}
+.progress-dot.active {
+  border-color: #d4a843;
+  box-shadow: 0 0 10px rgba(212,168,67,0.5);
+}
+.progress-dot.correct {
+  background: #d4a843;
+  border-color: #d4a843;
+  box-shadow: 0 0 12px rgba(212,168,67,0.6);
+}
+.progress-dot.wrong {
+  background: #c0392b;
+  border-color: #c0392b;
+  box-shadow: 0 0 10px rgba(192,57,43,0.5);
+}
+
+/* Game area */
+.game-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Data + Circle layout */
+.data-circle-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  width: 100%;
+  min-height: 340px;
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.data-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 0 0 200px;
+  max-width: 220px;
+}
+
+/* Data clouds */
+.data-cloud {
+  padding: 14px 18px;
+  border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%;
+  background: linear-gradient(135deg, rgba(123,47,242,0.12), rgba(80,40,180,0.08));
+  border: 1px solid rgba(123,47,242,0.2);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(123,47,242,0.1), inset 0 0 20px rgba(123,47,242,0.05);
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  text-align: center;
+  position: relative;
+}
+.data-cloud.from-right {
+  transform: translateX(40px);
+}
+.data-cloud.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+.data-cloud.hint-cloud {
+  background: linear-gradient(135deg, rgba(46,204,113,0.12), rgba(39,174,96,0.08));
+  border-color: rgba(46,204,113,0.25);
+  box-shadow: 0 4px 20px rgba(46,204,113,0.1);
+  padding: 16px 20px;
+}
+.data-cloud.visible {
+  animation: cloudFloat 3.5s ease-in-out infinite;
+}
+.data-cloud:nth-child(1).visible { animation-delay: 0s; }
+.data-cloud:nth-child(2).visible { animation-delay: 0.7s; }
+.data-cloud:nth-child(3).visible { animation-delay: 1.4s; }
+
+@keyframes cloudFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.data-label {
+  font-size: 11px;
+  color: rgba(123,47,242,0.9);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+}
+.data-value {
+  font-size: 15px;
+  color: #d4a843;
+  font-weight: 700;
+  font-family: 'Cinzel', serif;
+}
+.hint-cloud .data-label {
+  color: rgba(46,204,113,0.9);
+}
+.hint-cloud .data-value {
+  color: #2ecc71;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+}
+
+/* Mystery circle */
+.mystery-circle-wrapper {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  flex-shrink: 0;
+}
+.mystery-circle {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 2px dashed rgba(212,168,67,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: circlePulse 3s ease-in-out infinite;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.mystery-circle .question-mark {
+  font-family: 'Cinzel', serif;
+  font-size: 100px;
+  font-weight: 900;
+  color: #d4a843;
+  text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.2);
+  transition: opacity 0.8s ease, color 0.3s ease;
+  user-select: none;
+  position: relative;
+  z-index: 2;
+}
+
+@keyframes circlePulse {
+  0%, 100% { transform: scale(1.0); }
+  50% { transform: scale(1.02); }
+}
+
+/* Crayon canvas overlay */
+#crayonCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+}
+#crayonSmoothCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* Object name reveal */
+.object-name {
+  font-family: 'Cinzel', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #d4a843;
+  text-shadow: 0 0 20px rgba(212,168,67,0.4);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s ease;
+  margin-top: 15px;
+  text-align: center;
+}
+.object-name.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Fun fact cloud */
+.fun-fact-cloud {
+  max-width: 500px;
+  padding: 20px 28px;
+  border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%;
+  background: linear-gradient(135deg, rgba(212,168,67,0.08), rgba(123,47,242,0.06));
+  border: 1px solid rgba(212,168,67,0.2);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 30px rgba(212,168,67,0.1);
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.9);
+  margin-top: 15px;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.5s ease;
+}
+.fun-fact-cloud.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Answer options */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 500px;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.5s ease;
+}
+.options-grid.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.option-btn {
+  padding: 14px 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(123,47,242,0.08);
+  border: 2px solid rgba(123,47,242,0.35);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(6px);
+  position: relative;
+  overflow: hidden;
+}
+.option-btn:hover:not(:disabled) {
+  border-color: rgba(123,47,242,0.7);
+  box-shadow: 0 0 20px rgba(123,47,242,0.2);
+  background: rgba(123,47,242,0.15);
+  transform: translateY(-2px);
+}
+.option-btn.correct {
+  border-color: #d4a843 !important;
+  background: rgba(212,168,67,0.15) !important;
+  box-shadow: 0 0 25px rgba(212,168,67,0.3) !important;
+  color: #d4a843 !important;
+}
+.option-btn.wrong {
+  border-color: #e74c3c !important;
+  background: rgba(231,76,60,0.12) !important;
+  animation: shakeBtn 0.5s ease;
+}
+.option-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@keyframes shakeBtn {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+@keyframes shakeCircle {
+  0%, 100% { transform: translateX(0) scale(1); }
+  20% { transform: translateX(-6px) scale(1); }
+  40% { transform: translateX(6px) scale(1); }
+  60% { transform: translateX(-4px) scale(1); }
+  80% { transform: translateX(4px) scale(1); }
+}
+
+/* Wrong feedback text */
+.wrong-feedback {
+  color: #e74c3c;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+.wrong-feedback.visible {
+  opacity: 1;
+}
+
+/* Next button */
+.next-btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 14px 36px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1040;
+  background: linear-gradient(135deg, #d4a843, #f0c860);
+  border: none;
+  border-radius: 30px;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(212,168,67,0.3);
+  transition: all 0.3s ease;
+  opacity: 0;
+  transform: translateY(10px);
+}
+.next-btn.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+.next-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 30px rgba(212,168,67,0.4);
+}
+
+/* End screen */
+.end-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-top: 40px;
+}
+.end-screen.active {
+  display: flex;
+}
+.end-title {
+  font-family: 'Cinzel', serif;
+  font-size: 40px;
+  font-weight: 900;
+  color: #d4a843;
+  text-shadow: 0 0 30px rgba(212,168,67,0.5);
+  margin-bottom: 20px;
+}
+.end-score {
+  font-size: 20px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 12px;
+}
+.end-message {
+  font-size: 16px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 30px;
+  max-width: 400px;
+  line-height: 1.5;
+}
+
+#celebrationCanvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 50;
+  pointer-events: none;
+}
+
+/* Responsive */
+@media (max-width: 700px) {
+  .data-circle-row {
+    flex-direction: column;
+    gap: 20px;
+    min-height: auto;
+  }
+  .data-column {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    flex: auto;
+    max-width: 100%;
+  }
+  .data-cloud { padding: 10px 14px; }
+  .mystery-circle-wrapper { order: -1; }
+  .title { font-size: 30px; }
+  .mystery-circle-wrapper, .mystery-circle, #crayonCanvas, #crayonSmoothCanvas {
+    width: 220px;
+    height: 220px;
+  }
+  .mystery-circle .question-mark { font-size: 70px; }
+}
+</style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+<canvas id="celebrationCanvas"></canvas>
+
+<div class="container">
+  <a href="index.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    Volver
+  </a>
+
+  <div class="title-area">
+    <h1 class="title">Analiza y Descubre</h1>
+    <p class="subtitle">Analiza los datos del telescopio e identifica el objeto misterioso</p>
+  </div>
+
+  <div class="progress-dots" id="progressDots">
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+  </div>
+
+  <div class="game-area" id="gameArea">
+    <div class="data-circle-row">
+      <div class="data-column" id="dataLeft"></div>
+
+      <div class="mystery-circle-wrapper">
+        <div class="mystery-circle" id="mysteryCircle">
+          <span class="question-mark" id="questionMark">?</span>
+        </div>
+        <canvas id="crayonCanvas" width="280" height="280"></canvas>
+        <canvas id="crayonSmoothCanvas" width="280" height="280"></canvas>
+      </div>
+
+      <div class="data-column" id="dataRight"></div>
+    </div>
+
+    <div class="object-name" id="objectName"></div>
+    <div class="fun-fact-cloud" id="funFact"></div>
+
+    <div class="options-grid" id="optionsGrid"></div>
+    <div class="wrong-feedback" id="wrongFeedback">¡Intentalo de nuevo!</div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextRound()">Siguiente &gt;</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <h2 class="end-title">¡Mision Completada!</h2>
+    <p class="end-score" id="endScore"></p>
+    <p class="end-message" id="endMessage"></p>
+    <button class="next-btn visible" onclick="location.href='index.html'" style="opacity:1;transform:none;">Volver al inicio</button>
+  </div>
+</div>
+
+<script>
+// ========== STARFIELD ==========
+(function() {
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  const STAR_COUNT = 200;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      alpha: Math.random(),
+      speed: Math.random() * 0.3 + 0.05,
+      twinkleSpeed: Math.random() * 0.015 + 0.005,
+      twinkleDir: Math.random() > 0.5 ? 1 : -1
+    });
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const s of stars) {
+      s.alpha += s.twinkleSpeed * s.twinkleDir;
+      if (s.alpha >= 1) { s.alpha = 1; s.twinkleDir = -1; }
+      if (s.alpha <= 0.1) { s.alpha = 0.1; s.twinkleDir = 1; }
+      s.y += s.speed;
+      if (s.y > canvas.height + 5) { s.y = -5; s.x = Math.random() * canvas.width; }
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(drawStars);
+  }
+  drawStars();
+})();
+
+// ========== GAME DATA ==========
+const rounds = [
+  {
+    name: 'El Sol',
+    data: [
+      { label: 'Temperatura', value: '5,778 K' },
+      { label: 'Masa', value: '1.0 M\u2609' },
+      { label: 'Radio', value: '1.0 R\u2609' },
+      { label: 'Luminosidad', value: '1.0 L\u2609' },
+      { label: 'Pista', value: 'Es la estrella m\u00e1s cercana a la Tierra', isHint: true }
+    ],
+    options: ['El Sol', 'Sirio', 'Betelgeuse', 'Alfa Centauri'],
+    answer: 0,
+    fact: '\u00a1El Sol contiene el 99.86% de toda la masa del Sistema Solar!',
+    crayon: '#E8A817',
+    fill: ['#FFD700', '#FFA500']
+  },
+  {
+    name: 'Enana Blanca',
+    data: [
+      { label: 'Temperatura', value: '25,000 K' },
+      { label: 'Masa', value: '0.6 M\u2609' },
+      { label: 'Radio', value: '0.01 R\u2609' },
+      { label: 'Luminosidad', value: '0.001 L\u2609' },
+      { label: 'Pista', value: 'Es muy caliente pero muy peque\u00f1a \u2014 del tama\u00f1o de la Tierra', isHint: true }
+    ],
+    options: ['Enana Roja', 'Enana Blanca', 'Estrella de Neutrones', 'Gigante Azul'],
+    answer: 1,
+    fact: '\u00a1Una cucharada de enana blanca pesar\u00eda unas 5 toneladas!',
+    crayon: '#B8D4E3',
+    fill: ['#E8F4FD', '#A8C8D8']
+  },
+  {
+    name: 'Gigante Roja',
+    data: [
+      { label: 'Temperatura', value: '3,500 K' },
+      { label: 'Masa', value: '1.2 M\u2609' },
+      { label: 'Radio', value: '100 R\u2609' },
+      { label: 'Luminosidad', value: '1,000 L\u2609' },
+      { label: 'Pista', value: 'Es enorme y fr\u00eda para ser una estrella. Es una estrella al final de su vida', isHint: true }
+    ],
+    options: ['Supergigante Azul', 'Gigante Roja', 'Pulsar', 'Estrella Variable'],
+    answer: 1,
+    fact: '\u00a1Cuando el Sol se convierta en gigante roja, llegar\u00e1 hasta la \u00f3rbita de Marte!',
+    crayon: '#C0392B',
+    fill: ['#E74C3C', '#8B0000']
+  },
+  {
+    name: 'Estrella de Neutrones',
+    data: [
+      { label: 'Temperatura', value: '600,000 K' },
+      { label: 'Masa', value: '1.4 M\u2609' },
+      { label: 'Radio', value: '0.00001 R\u2609' },
+      { label: 'Luminosidad', value: '0.1 L\u2609' },
+      { label: 'Pista', value: 'Es incre\u00edblemente densa \u2014 una cucharada pesa mil millones de toneladas', isHint: true }
+    ],
+    options: ['Enana Blanca', 'Agujero Negro', 'Estrella de Neutrones', 'Qu\u00e1sar'],
+    answer: 2,
+    fact: '\u00a1Las estrellas de neutrones giran hasta 716 veces por SEGUNDO!',
+    crayon: '#6C3CE0',
+    fill: ['#7B2FF2', '#00B4D8']
+  },
+  {
+    name: 'Agujero Negro',
+    data: [
+      { label: 'Temperatura', value: '0 K (no emite luz)' },
+      { label: 'Masa', value: '10 M\u2609' },
+      { label: 'Radio', value: '0.00003 R\u2609 (horizonte de eventos)' },
+      { label: 'Luminosidad', value: '0 (disco de acreci\u00f3n brilla)' },
+      { label: 'Pista', value: 'Ni siquiera la luz puede escapar de este objeto', isHint: true }
+    ],
+    options: ['Estrella de Neutrones', 'Agujero Negro', 'Materia Oscura', 'Nebulosa Oscura'],
+    answer: 1,
+    fact: '\u00a1El agujero negro m\u00e1s cercano a la Tierra est\u00e1 a solo 1,560 a\u00f1os luz!',
+    crayon: '#3D0066',
+    fill: ['#2D004D', '#6A0DAD']
+  }
+];
+
+// ========== GAME STATE ==========
+let currentRound = 0;
+let score = 0; // first-attempt correct
+let firstAttempt = true;
+let animating = false;
+
+const progressDots = document.querySelectorAll('.progress-dot');
+const gameArea = document.getElementById('gameArea');
+const dataLeft = document.getElementById('dataLeft');
+const dataRight = document.getElementById('dataRight');
+const mysteryCircle = document.getElementById('mysteryCircle');
+const questionMark = document.getElementById('questionMark');
+const optionsGrid = document.getElementById('optionsGrid');
+const objectNameEl = document.getElementById('objectName');
+const funFactEl = document.getElementById('funFact');
+const wrongFeedback = document.getElementById('wrongFeedback');
+const nextBtn = document.getElementById('nextBtn');
+const endScreen = document.getElementById('endScreen');
+
+const crayonCanvas = document.getElementById('crayonCanvas');
+const crayonCtx = crayonCanvas.getContext('2d');
+const smoothCanvas = document.getElementById('crayonSmoothCanvas');
+const smoothCtx = smoothCanvas.getContext('2d');
+
+function getCircleSize() {
+  return window.innerWidth <= 700 ? 220 : 280;
+}
+
+// ========== START ROUND ==========
+function startRound() {
+  const round = rounds[currentRound];
+  firstAttempt = true;
+  animating = false;
+
+  // Reset UI
+  dataLeft.innerHTML = '';
+  dataRight.innerHTML = '';
+  optionsGrid.innerHTML = '';
+  optionsGrid.classList.remove('visible');
+  objectNameEl.textContent = '';
+  objectNameEl.classList.remove('visible');
+  funFactEl.textContent = '';
+  funFactEl.classList.remove('visible');
+  wrongFeedback.classList.remove('visible');
+  nextBtn.classList.remove('visible');
+  questionMark.style.opacity = '1';
+  questionMark.style.color = '#d4a843';
+  mysteryCircle.style.animation = 'circlePulse 3s ease-in-out infinite';
+  mysteryCircle.style.borderColor = 'rgba(212,168,67,0.5)';
+
+  // Clear canvases
+  const sz = getCircleSize();
+  crayonCanvas.width = sz;
+  crayonCanvas.height = sz;
+  smoothCanvas.width = sz;
+  smoothCanvas.height = sz;
+  smoothCanvas.style.opacity = '0';
+  crayonCtx.clearRect(0, 0, sz, sz);
+  smoothCtx.clearRect(0, 0, sz, sz);
+
+  // Update progress dots
+  progressDots.forEach((dot, i) => {
+    dot.classList.remove('active');
+    if (i === currentRound) dot.classList.add('active');
+  });
+
+  // Create data clouds
+  const leftData = [round.data[0], round.data[1], round.data[2]];
+  const rightData = [round.data[3], round.data[4]];
+
+  leftData.forEach((d, i) => {
+    const cloud = createCloud(d, false);
+    dataLeft.appendChild(cloud);
+    setTimeout(() => cloud.classList.add('visible'), 400 + i * 600);
+  });
+
+  rightData.forEach((d, i) => {
+    const cloud = createCloud(d, true);
+    dataRight.appendChild(cloud);
+    setTimeout(() => cloud.classList.add('visible'), 400 + (i + 3) * 600);
+  });
+
+  // Create options after all clouds appear
+  const totalDelay = 400 + 5 * 600;
+  setTimeout(() => {
+    round.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.onclick = () => handleAnswer(i, btn);
+      optionsGrid.appendChild(btn);
+    });
+    optionsGrid.classList.add('visible');
+  }, totalDelay);
+}
+
+function createCloud(data, fromRight) {
+  const cloud = document.createElement('div');
+  cloud.className = 'data-cloud' + (fromRight ? ' from-right' : '') + (data.isHint ? ' hint-cloud' : '');
+  cloud.innerHTML = `<span class="data-label">${data.isHint ? 'Pista' : data.label}</span><span class="data-value">${data.value}</span>`;
+  return cloud;
+}
+
+// ========== HANDLE ANSWER ==========
+function handleAnswer(index, btn) {
+  if (animating) return;
+  const round = rounds[currentRound];
+
+  if (index === round.answer) {
+    // Correct!
+    animating = true;
+    btn.classList.add('correct');
+    if (firstAttempt) {
+      score++;
+      progressDots[currentRound].classList.add('correct');
+    }
+    // Disable all buttons
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    wrongFeedback.classList.remove('visible');
+    // Start crayon animation
+    startCrayonAnimation(round);
+  } else {
+    // Wrong
+    firstAttempt = false;
+    progressDots[currentRound].classList.add('wrong');
+    btn.classList.add('wrong');
+    btn.disabled = true;
+    mysteryCircle.style.animation = 'shakeCircle 0.5s ease';
+    questionMark.style.color = '#e74c3c';
+    wrongFeedback.classList.add('visible');
+    setTimeout(() => {
+      mysteryCircle.style.animation = 'circlePulse 3s ease-in-out infinite';
+      questionMark.style.color = '#d4a843';
+    }, 600);
+    setTimeout(() => wrongFeedback.classList.remove('visible'), 1500);
+  }
+}
+
+// ========== CRAYON ANIMATION ==========
+function startCrayonAnimation(round) {
+  const sz = getCircleSize();
+  const radius = sz / 2 - 2;
+  const cx = sz / 2;
+  const cy = sz / 2;
+  const ctx = crayonCtx;
+
+  // Setup clip
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.clip();
+
+  const numStrokes = 14;
+  const strokeHeight = (sz * 0.85) / numStrokes;
+  const startY = sz * 0.08;
+  const crayonColor = round.crayon;
+  const fillColors = round.fill;
+
+  // Crayon properties
+  const crayonW = 80;
+  const crayonH = 18;
+
+  let currentStroke = 0;
+  let strokeProgress = 0; // 0 to 1
+  const strokeSpeed = 0.018;
+
+  function getStrokeX(progress, strokeIdx) {
+    const goingRight = strokeIdx % 2 === 0;
+    const margin = 10;
+    const startX = goingRight ? margin : sz - margin;
+    const endX = goingRight ? sz - margin : margin;
+    return startX + (endX - startX) * progress;
+  }
+
+  function getStrokeY(strokeIdx) {
+    return startY + strokeIdx * strokeHeight + strokeHeight / 2;
+  }
+
+  function drawCrayonStrokes(upToStroke, upToProgress) {
+    // Don't clear — rebuild each frame for simplicity, but we save perf by only drawing new stuff
+    // Actually, clear and redraw is fine at this scale
+    ctx.clearRect(0, 0, sz, sz);
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+    ctx.clip();
+
+    for (let s = 0; s <= upToStroke && s < numStrokes; s++) {
+      const prog = (s < upToStroke) ? 1.0 : upToProgress;
+      const y = getStrokeY(s);
+      const goingRight = s % 2 === 0;
+      const margin = 10;
+      const startX = goingRight ? margin : sz - margin;
+      const endX = goingRight ? sz - margin : margin;
+      const currentX = startX + (endX - startX) * prog;
+
+      // Draw multiple sub-lines for crayon texture
+      for (let line = 0; line < 5; line++) {
+        const offsetY = (line - 2) * 4 + (Math.random() - 0.5) * 2;
+        const alpha = 0.15 + Math.random() * 0.15;
+        ctx.beginPath();
+        ctx.moveTo(startX, y + offsetY);
+
+        // Add wobble points
+        const steps = 8;
+        for (let p = 1; p <= steps; p++) {
+          const frac = p / steps;
+          if (frac > prog) break;
+          const px = startX + (endX - startX) * frac;
+          const py = y + offsetY + (Math.random() - 0.5) * 2;
+          ctx.lineTo(px, py);
+        }
+
+        ctx.strokeStyle = hexToRgba(crayonColor, alpha);
+        ctx.lineWidth = 4 + Math.random() * 2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawCrayon(x, y, angle) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+
+    // Shadow
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
+
+    // Body
+    const bx = -crayonW / 2;
+    const by = -crayonH / 2;
+    const bodyGrad = ctx.createLinearGradient(bx, by, bx, by + crayonH);
+    bodyGrad.addColorStop(0, lightenColor(crayonColor, 30));
+    bodyGrad.addColorStop(0.5, crayonColor);
+    bodyGrad.addColorStop(1, darkenColor(crayonColor, 20));
+    ctx.fillStyle = bodyGrad;
+    roundRect(ctx, bx + 12, by, crayonW - 12, crayonH, 3);
+    ctx.fill();
+
+    // Wrapper band (middle third)
+    const wrapX = bx + 12 + (crayonW - 12) * 0.3;
+    const wrapW = (crayonW - 12) * 0.4;
+    ctx.fillStyle = lightenColor(crayonColor, 50);
+    ctx.globalAlpha = 0.4;
+    ctx.fillRect(wrapX, by + 1, wrapW, crayonH - 2);
+    ctx.globalAlpha = 1.0;
+
+    // Tip (triangle on the left side = drawing end)
+    ctx.shadowColor = 'transparent';
+    ctx.beginPath();
+    ctx.moveTo(bx + 12, by);
+    ctx.lineTo(bx, by + crayonH / 2);
+    ctx.lineTo(bx + 12, by + crayonH);
+    ctx.closePath();
+    ctx.fillStyle = darkenColor(crayonColor, 40);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function animate() {
+    if (currentStroke >= numStrokes) {
+      // Done coloring
+      ctx.restore();
+      finishColoring(round);
+      return;
+    }
+
+    strokeProgress += strokeSpeed;
+    if (strokeProgress > 1) {
+      strokeProgress = 0;
+      currentStroke++;
+      if (currentStroke >= numStrokes) {
+        drawCrayonStrokes(numStrokes - 1, 1);
+        finishColoring(round);
+        return;
+      }
+    }
+
+    // Fade the question mark as we progress
+    const totalProgress = (currentStroke + strokeProgress) / numStrokes;
+    questionMark.style.opacity = Math.max(0, 1 - totalProgress * 1.3);
+
+    drawCrayonStrokes(currentStroke, strokeProgress);
+
+    // Draw crayon
+    const crayX = getStrokeX(strokeProgress, currentStroke);
+    const crayY = getStrokeY(currentStroke);
+    const angle = currentStroke % 2 === 0 ? -0.5 : 0.5;
+    drawCrayon(crayX, crayY, angle);
+
+    requestAnimationFrame(animate);
+  }
+
+  // Small delay then start
+  setTimeout(() => requestAnimationFrame(animate), 300);
+}
+
+function finishColoring(round) {
+  const sz = getCircleSize();
+  const radius = sz / 2 - 2;
+  const cx = sz / 2;
+
+  // Draw smooth gradient on smooth canvas
+  smoothCtx.save();
+  smoothCtx.beginPath();
+  smoothCtx.arc(cx, cx, radius, 0, Math.PI * 2);
+  smoothCtx.clip();
+
+  const grad = smoothCtx.createRadialGradient(cx * 0.8, cx * 0.7, 0, cx, cx, radius);
+  grad.addColorStop(0, round.fill[0]);
+  grad.addColorStop(1, round.fill[1]);
+  smoothCtx.fillStyle = grad;
+  smoothCtx.fillRect(0, 0, sz, sz);
+  smoothCtx.restore();
+
+  // Transition: smooth canvas fades in over crayon texture
+  smoothCanvas.style.opacity = '1';
+
+  // Glow pulse on circle
+  mysteryCircle.style.animation = 'none';
+  mysteryCircle.style.borderColor = 'transparent';
+  mysteryCircle.style.boxShadow = `0 0 40px ${round.fill[0]}55, 0 0 80px ${round.fill[1]}33`;
+
+  // Crayon lifts off (clear crayon canvas after a moment to remove the crayon sprite)
+  setTimeout(() => {
+    // Redraw strokes without crayon
+    crayonCtx.clearRect(0, 0, sz, sz);
+  }, 200);
+
+  // Show object name
+  setTimeout(() => {
+    objectNameEl.textContent = round.name;
+    objectNameEl.classList.add('visible');
+  }, 500);
+
+  // Show fun fact
+  setTimeout(() => {
+    funFactEl.textContent = round.fact;
+    funFactEl.classList.add('visible');
+  }, 900);
+
+  // Show next button
+  setTimeout(() => {
+    nextBtn.classList.add('visible');
+  }, 1200);
+}
+
+// ========== NEXT ROUND ==========
+function nextRound() {
+  if (currentRound >= rounds.length - 1) {
+    showEndScreen();
+    return;
+  }
+
+  // Transition out
+  const sz = getCircleSize();
+  mysteryCircle.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+  mysteryCircle.style.transform = 'scale(0.3)';
+  mysteryCircle.style.opacity = '0';
+  smoothCanvas.style.transition = 'opacity 0.3s ease';
+  smoothCanvas.style.opacity = '0';
+  crayonCanvas.style.transition = 'opacity 0.3s ease';
+  crayonCanvas.style.opacity = '0';
+
+  // Data clouds drift off
+  document.querySelectorAll('.data-cloud').forEach((cloud, i) => {
+    cloud.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+    cloud.style.opacity = '0';
+    cloud.style.transform = cloud.classList.contains('from-right') ? 'translateX(60px)' : 'translateX(-60px)';
+  });
+
+  objectNameEl.classList.remove('visible');
+  funFactEl.classList.remove('visible');
+  nextBtn.classList.remove('visible');
+  optionsGrid.classList.remove('visible');
+
+  setTimeout(() => {
+    currentRound++;
+    // Reset circle appearance
+    mysteryCircle.style.transition = 'none';
+    mysteryCircle.style.transform = 'scale(0.3)';
+    mysteryCircle.style.opacity = '0';
+    mysteryCircle.style.boxShadow = 'none';
+    crayonCanvas.style.transition = 'none';
+    crayonCanvas.style.opacity = '1';
+    smoothCanvas.style.transition = 'none';
+    smoothCanvas.style.opacity = '0';
+
+    startRound();
+
+    // Animate circle in
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        mysteryCircle.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+        mysteryCircle.style.transform = 'scale(1)';
+        mysteryCircle.style.opacity = '1';
+      });
+    });
+  }, 800);
+}
+
+// ========== END SCREEN ==========
+function showEndScreen() {
+  gameArea.style.display = 'none';
+  document.querySelector('.progress-dots').style.display = 'none';
+  endScreen.classList.add('active');
+  document.getElementById('endScore').textContent = `Descubriste ${score} de 5 objetos al primer intento`;
+
+  let msg;
+  if (score === 5) msg = '¡Perfecto! Eres un verdadero astrofisico. ¡Impresionante dominio del cosmos!';
+  else if (score >= 4) msg = '¡Excelente! Casi perfecto. ¡Tienes un gran conocimiento del universo!';
+  else if (score >= 3) msg = '¡Muy bien! Conoces bastante sobre los objetos estelares.';
+  else if (score >= 2) msg = '¡Buen intento! Sigue explorando el universo y aprenderas mas.';
+  else msg = '¡No te rindas! El universo es inmenso y hay mucho por descubrir.';
+
+  document.getElementById('endMessage').textContent = msg;
+  startCelebration();
+}
+
+// ========== CELEBRATION PARTICLES ==========
+function startCelebration() {
+  const canvas = document.getElementById('celebrationCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  const colors = ['#d4a843', '#f0c860', '#7B2FF2', '#e74c3c', '#2ecc71', '#ffffff', '#00B4D8'];
+
+  function burst(x, y) {
+    for (let i = 0; i < 40; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 6 + 2;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2,
+        r: Math.random() * 3 + 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: 1,
+        decay: Math.random() * 0.015 + 0.008,
+        gravity: 0.06
+      });
+    }
+  }
+
+  // Multiple bursts
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      burst(
+        Math.random() * canvas.width * 0.6 + canvas.width * 0.2,
+        Math.random() * canvas.height * 0.4 + canvas.height * 0.1
+      );
+    }, i * 400);
+  }
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.alpha -= p.decay;
+      if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (particles.length > 0) requestAnimationFrame(animateParticles);
+  }
+  requestAnimationFrame(animateParticles);
+}
+
+// ========== UTILITY FUNCTIONS ==========
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function lightenColor(hex, amount) {
+  let r = parseInt(hex.slice(1,3), 16);
+  let g = parseInt(hex.slice(3,5), 16);
+  let b = parseInt(hex.slice(5,7), 16);
+  r = Math.min(255, r + amount);
+  g = Math.min(255, g + amount);
+  b = Math.min(255, b + amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+function darkenColor(hex, amount) {
+  let r = parseInt(hex.slice(1,3), 16);
+  let g = parseInt(hex.slice(3,5), 16);
+  let b = parseInt(hex.slice(5,7), 16);
+  r = Math.max(0, r - amount);
+  g = Math.max(0, g - amount);
+  b = Math.max(0, b - amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ========== INIT ==========
+startRound();
+</script>
+</body>
+</html>
