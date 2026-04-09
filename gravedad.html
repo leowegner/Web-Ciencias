@@ -125,6 +125,8 @@ canvas{display:block;width:100%;height:100%;position:absolute;top:0;left:0;curso
       <button class="action-btn" id="preBinary">&#9733;&#9733; Sistema Binario</button>
       <button class="action-btn" id="preChaos">&#128165; Caos</button>
     </div>
+    <h3>Física</h3>
+    <button class="action-btn gold" id="btnKepler" style="font-size:10px;">📚 Leyes de Kepler</button>
   </div>
 </div>
 
@@ -677,6 +679,41 @@ document.getElementById('preChaos').addEventListener('click', () => {
     objects.push(createObject(types[i], x, y, vx, vy));
   }
 });
+document.getElementById('btnKepler').addEventListener('click', () => {
+  document.getElementById('keplerModal').style.display = 'block';
+});
 </script>
+
+<!-- Kepler Modal -->
+<div id="keplerModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);z-index:100;overflow-y:auto;backdrop-filter:blur(4px);">
+  <div style="max-width:680px;margin:40px auto;padding:32px;background:linear-gradient(135deg,rgba(10,14,39,0.97),rgba(26,16,64,0.97));border:1px solid rgba(123,47,242,0.5);border-radius:20px;color:#fff;font-family:'Inter',sans-serif;position:relative;">
+    <button onclick="document.getElementById('keplerModal').style.display='none'" style="position:absolute;top:16px;right:16px;background:rgba(123,47,242,0.2);border:1px solid rgba(123,47,242,0.4);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;font-size:13px;">✕ Cerrar</button>
+    <h2 style="font-family:'Cinzel',serif;color:#d4a843;font-size:22px;margin-bottom:20px;text-align:center;text-shadow:0 0 20px rgba(212,168,67,0.4);">Órbitas Elípticas y Leyes de Kepler</h2>
+
+    <div style="margin-bottom:20px;padding:16px;background:rgba(123,47,242,0.08);border-radius:12px;border-left:3px solid #d4a843;">
+      <h3 style="color:#d4a843;font-family:'Cinzel',serif;font-size:14px;margin-bottom:8px;">¿Por qué las órbitas son elípticas?</h3>
+      <p style="font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85);">La gravedad actúa siempre hacia el centro del objeto masivo. Cuando un planeta orbita una estrella, su velocidad y la dirección de la gravedad raramente están perfectamente alineadas para formar un círculo perfecto. El resultado es una <strong style="color:#d4a843;">elipse</strong> — una curva ovalada con la estrella en uno de sus dos focos, no en el centro.</p>
+    </div>
+
+    <div style="margin-bottom:20px;padding:16px;background:rgba(123,47,242,0.08);border-radius:12px;border-left:3px solid #7b2ff2;">
+      <h3 style="color:#d4a843;font-family:'Cinzel',serif;font-size:14px;margin-bottom:8px;">1ª Ley de Kepler — Ley de las Órbitas</h3>
+      <p style="font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85);">"<em>Cada planeta orbita el Sol en una trayectoria elíptica, con el Sol situado en uno de los dos focos de la elipse.</em>" Un círculo es solo un caso especial de elipse donde los dos focos coinciden. En órbitas muy excéntricas (como los cometas), la diferencia entre el punto más cercano (<strong style="color:#4fc3f7;">perihelio</strong>) y el más lejano (<strong style="color:#4fc3f7;">afelio</strong>) es enorme.</p>
+    </div>
+
+    <div style="margin-bottom:20px;padding:16px;background:rgba(123,47,242,0.08);border-radius:12px;border-left:3px solid #2ecc71;">
+      <h3 style="color:#d4a843;font-family:'Cinzel',serif;font-size:14px;margin-bottom:8px;">2ª Ley de Kepler — Ley de las Áreas</h3>
+      <p style="font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85);">"<em>La línea que une un planeta con el Sol barre áreas iguales en tiempos iguales.</em>" Esto significa que los planetas se mueven <strong style="color:#2ecc71;">más rápido</strong> cuando están cerca de la estrella (perihelio) y <strong style="color:#e74c3c;">más lento</strong> cuando están lejos (afelio). Puedes observarlo en esta simulación: coloca un planeta con velocidad lateral y nota cómo acelera al acercarse a la estrella.</p>
+    </div>
+
+    <div style="margin-bottom:20px;padding:16px;background:rgba(123,47,242,0.08);border-radius:12px;border-left:3px solid #ff8c00;">
+      <h3 style="color:#d4a843;font-family:'Cinzel',serif;font-size:14px;margin-bottom:8px;">3ª Ley de Kepler — Ley de los Períodos</h3>
+      <p style="font-size:13px;line-height:1.7;color:rgba(255,255,255,0.85);">"<em>El cuadrado del período orbital es proporcional al cubo del semieje mayor de la órbita.</em>" <strong style="color:#ff8c00;">T² ∝ a³</strong>. Los planetas más alejados de la estrella tardan mucho más en completar una órbita: Venus tarda 225 días, Marte 687 días, Júpiter casi 12 años. ¡Y todo por esta simple relación matemática!</p>
+    </div>
+
+    <div style="padding:16px;background:rgba(212,168,67,0.06);border-radius:12px;border:1px solid rgba(212,168,67,0.2);text-align:center;">
+      <p style="font-size:13px;color:rgba(255,255,255,0.8);line-height:1.6;"><strong style="color:#d4a843;">Pruébalo:</strong> Usa el escenario "Sistema Solar" y observa las órbitas. Luego coloca un planeta muy cerca de la estrella y arrastra rápido en diagonal para crear una órbita muy elíptica.</p>
+    </div>
+  </div>
+</div>
 </body>
 </html>
