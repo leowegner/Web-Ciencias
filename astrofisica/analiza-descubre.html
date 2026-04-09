@@ -837,7 +837,7 @@ function startCrayonAnimation(round) {
   ctx.arc(cx, cy, radius, 0, Math.PI * 2);
   ctx.clip();
 
-  const numStrokes = 14;
+  const numStrokes = 8;
   const strokeHeight = (sz * 0.85) / numStrokes;
   const startY = sz * 0.08;
   const crayonColor = round.crayon;
@@ -849,7 +849,7 @@ function startCrayonAnimation(round) {
 
   let currentStroke = 0;
   let strokeProgress = 0; // 0 to 1
-  const strokeSpeed = 0.018;
+  const strokeSpeed = 0.055;
 
   function getStrokeX(progress, strokeIdx) {
     const goingRight = strokeIdx % 2 === 0;

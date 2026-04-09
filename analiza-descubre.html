@@ -10,39 +10,40 @@
 
 body {
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0e27 0%, #1a1040 40%, #2d1b69 100%);
+  background: linear-gradient(170deg, #0a0e27 0%, #1a1040 40%, #2d1b69 100%);
   font-family: 'Inter', sans-serif;
   color: #ffffff;
   overflow-x: hidden;
   position: relative;
 }
 
-canvas#starfield {
+/* Nebula corner gradients */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+body::before {
+  top: -150px;
+  right: -150px;
+  background: radial-gradient(circle, rgba(200,50,150,0.12) 0%, transparent 70%);
+}
+body::after {
+  bottom: -200px;
+  left: -150px;
+  background: radial-gradient(circle, rgba(180,60,200,0.10) 0%, transparent 70%);
+}
+
+#starfield {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
   z-index: 0;
   pointer-events: none;
-}
-
-body::before, body::after {
-  content: '';
-  position: fixed;
-  border-radius: 50%;
-  filter: blur(120px);
-  opacity: 0.15;
-  z-index: 0;
-  pointer-events: none;
-}
-body::before {
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, #ff3cac, transparent 70%);
-  top: -150px; right: -150px;
-}
-body::after {
-  width: 500px; height: 500px;
-  background: radial-gradient(circle, #7b2ff2, transparent 70%);
-  bottom: -100px; left: -100px;
 }
 
 .container {
@@ -51,1338 +52,1166 @@ body::after {
   max-width: 900px;
   margin: 0 auto;
   padding: 20px 20px 60px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
+/* Back button */
 .back-btn {
-  display: inline-flex;
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
   align-items: center;
   gap: 8px;
-  color: #d4a843;
+  color: rgba(255,255,255,0.6);
   text-decoration: none;
   font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  font-size: 0.95rem;
-  padding: 10px 20px;
-  border: 1px solid rgba(212,168,67,0.3);
-  border-radius: 12px;
-  background: rgba(212,168,67,0.05);
-  transition: all 0.3s;
-  margin-bottom: 20px;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  z-index: 10;
 }
 .back-btn:hover {
-  background: rgba(212,168,67,0.15);
-  border-color: rgba(212,168,67,0.6);
-  box-shadow: 0 0 20px rgba(212,168,67,0.15);
+  color: #d4a843;
+  border-color: rgba(212,168,67,0.4);
+  background: rgba(212,168,67,0.1);
 }
+.back-btn svg { width: 16px; height: 16px; }
 
-.game-title {
+/* Title area */
+.title-area {
+  text-align: center;
+  margin-top: 50px;
+  margin-bottom: 10px;
+}
+.title {
   font-family: 'Cinzel', serif;
-  font-size: 2.8rem;
+  font-size: 42px;
   font-weight: 900;
   color: #d4a843;
-  text-align: center;
-  margin-bottom: 8px;
-  text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.25);
-  animation: titleGlow 3s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.2);
+  letter-spacing: 2px;
 }
-@keyframes titleGlow {
-  0%, 100% { text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.25); }
-  50% { text-shadow: 0 0 40px rgba(212,168,67,0.8), 0 0 80px rgba(212,168,67,0.4), 0 0 120px rgba(212,168,67,0.2); }
-}
-
 .subtitle {
-  text-align: center;
-  color: rgba(255,255,255,0.5);
-  font-size: 0.95rem;
-  margin-bottom: 20px;
+  font-size: 16px;
+  color: rgba(255,255,255,0.65);
+  margin-top: 8px;
   font-weight: 300;
 }
 
-.progress-bar {
+/* Progress dots */
+.progress-dots {
   display: flex;
-  justify-content: center;
   gap: 14px;
-  margin-bottom: 25px;
+  margin: 20px 0 30px;
+  justify-content: center;
 }
 .progress-dot {
-  width: 16px; height: 16px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.1);
-  border: 2px solid rgba(255,255,255,0.2);
-  transition: all 0.5s;
-  position: relative;
+  border: 2px solid rgba(212,168,67,0.4);
+  background: transparent;
+  transition: all 0.4s ease;
 }
 .progress-dot.active {
+  border-color: #d4a843;
+  box-shadow: 0 0 10px rgba(212,168,67,0.5);
+}
+.progress-dot.correct {
   background: #d4a843;
   border-color: #d4a843;
   box-shadow: 0 0 12px rgba(212,168,67,0.6);
 }
-.progress-dot.completed {
-  background: #4ade80;
-  border-color: #4ade80;
-  box-shadow: 0 0 10px rgba(74,222,128,0.5);
-}
-.progress-dot.active::after {
-  content: '';
-  position: absolute;
-  top: -4px; left: -4px; right: -4px; bottom: -4px;
-  border-radius: 50%;
-  border: 2px solid rgba(212,168,67,0.4);
-  animation: dotPulse 1.5s ease-in-out infinite;
-}
-@keyframes dotPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.4); opacity: 0; }
+.progress-dot.wrong {
+  background: #c0392b;
+  border-color: #c0392b;
+  box-shadow: 0 0 10px rgba(192,57,43,0.5);
 }
 
-/* Scene layout */
-.scene-wrapper {
-  position: relative;
+/* Game area */
+.game-area {
   width: 100%;
-  min-height: 420px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 10px;
-  overflow: visible;
-}
-
-.round-label-top {
-  text-align: center;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  color: rgba(255,255,255,0.35);
-  margin-bottom: 15px;
-}
-
-/* Mystery circle */
-.mystery-circle-wrap {
   position: relative;
-  width: 280px;
-  height: 280px;
-  flex-shrink: 0;
-  overflow: visible;
 }
 
-.mystery-circle {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  border: 2px solid rgba(212,168,67,0.4);
-  position: relative;
+/* Data + Circle layout */
+.data-circle-row {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(10,14,39,0.6);
-  animation: circlePulse 3s ease-in-out infinite;
-  transition: border-color 0.3s, box-shadow 0.3s;
-}
-@keyframes circlePulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(212,168,67,0.1), 0 0 60px rgba(123,47,242,0.05); }
-  50% { box-shadow: 0 0 35px rgba(212,168,67,0.2), 0 0 80px rgba(123,47,242,0.1); }
-}
-
-.mystery-question {
-  font-family: 'Cinzel', serif;
-  font-size: 80px;
-  font-weight: 900;
-  color: #d4a843;
-  text-shadow: 0 0 30px rgba(212,168,67,0.6);
-  user-select: none;
-  transition: opacity 0.5s;
-  z-index: 2;
-}
-
-canvas#crayonCanvas {
-  position: absolute;
-  top: 0; left: 0;
+  gap: 30px;
   width: 100%;
-  height: 100%;
-  z-index: 3;
-  pointer-events: none;
+  min-height: 340px;
+  position: relative;
+  margin-bottom: 20px;
 }
 
-.object-name-reveal {
-  position: absolute;
-  bottom: -45px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Cinzel', serif;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #d4a843;
-  text-shadow: 0 0 20px rgba(212,168,67,0.5);
-  white-space: nowrap;
-  opacity: 0;
-  transition: opacity 0.8s;
-}
-
-.gradient-overlay {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  border-radius: 50%;
-  opacity: 0;
-  transition: opacity 0.8s;
-  z-index: 4;
-  pointer-events: none;
+.data-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  flex: 0 0 200px;
+  max-width: 220px;
 }
 
 /* Data clouds */
 .data-cloud {
-  position: absolute;
-  padding: 12px 18px;
-  border-radius: 60% 40% 70% 30% / 50% 60% 40% 70%;
-  backdrop-filter: blur(4px);
+  padding: 14px 18px;
+  border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%;
+  background: linear-gradient(135deg, rgba(123,47,242,0.12), rgba(80,40,180,0.08));
+  border: 1px solid rgba(123,47,242,0.2);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(123,47,242,0.1), inset 0 0 20px rgba(123,47,242,0.05);
   opacity: 0;
-  transition: opacity 0.6s, transform 0.6s;
-  z-index: 5;
-  min-width: 140px;
+  transform: translateX(-40px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
   text-align: center;
-  pointer-events: none;
+  position: relative;
 }
-.data-cloud .cloud-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  color: #7b2ff2;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 3px;
+.data-cloud.from-right {
+  transform: translateX(40px);
 }
-.data-cloud .cloud-value {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #d4a843;
+.data-cloud.visible {
+  opacity: 1;
+  transform: translateX(0);
 }
 .data-cloud.hint-cloud {
-  border-radius: 50% 60% 45% 55% / 55% 45% 60% 50%;
-  min-width: 180px;
+  background: linear-gradient(135deg, rgba(46,204,113,0.12), rgba(39,174,96,0.08));
+  border-color: rgba(46,204,113,0.25);
+  box-shadow: 0 4px 20px rgba(46,204,113,0.1);
+  padding: 16px 20px;
 }
-.data-cloud.hint-cloud .cloud-label {
-  color: #4ade80;
+.data-cloud.visible {
+  animation: cloudFloat 3.5s ease-in-out infinite;
 }
-.data-cloud.hint-cloud .cloud-value {
-  color: #4ade80;
-  font-size: 0.85rem;
+.data-cloud:nth-child(1).visible { animation-delay: 0s; }
+.data-cloud:nth-child(2).visible { animation-delay: 0.7s; }
+.data-cloud:nth-child(3).visible { animation-delay: 1.4s; }
+
+@keyframes cloudFloat {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+}
+
+.data-label {
+  font-size: 11px;
+  color: rgba(123,47,242,0.9);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 2px;
+}
+.data-value {
+  font-size: 15px;
+  color: #d4a843;
+  font-weight: 700;
+  font-family: 'Cinzel', serif;
+}
+.hint-cloud .data-label {
+  color: rgba(46,204,113,0.9);
+}
+.hint-cloud .data-value {
+  color: #2ecc71;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
   font-weight: 400;
-  font-style: italic;
 }
 
-/* Cloud positions — desktop */
-.data-cloud.pos-0 { top: -10px; left: -200px; }
-.data-cloud.pos-1 { top: -10px; right: -200px; }
-.data-cloud.pos-2 { top: 110px; left: -210px; }
-.data-cloud.pos-3 { top: 110px; right: -210px; }
-.data-cloud.pos-4 { top: 230px; left: -220px; }
-
-/* Float from side */
-.data-cloud.from-left { transform: translateX(-60px); }
-.data-cloud.from-right { transform: translateX(60px); }
-.data-cloud.visible { opacity: 1; transform: translateX(0); }
-
-/* Bob animation */
-@keyframes bob1 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-@keyframes bob2 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-@keyframes bob3 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
-@keyframes bob4 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
-@keyframes bob5 { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-9px)} }
-.data-cloud.bobbing.pos-0 { animation: bob1 3.2s ease-in-out infinite; }
-.data-cloud.bobbing.pos-1 { animation: bob2 2.8s ease-in-out infinite; }
-.data-cloud.bobbing.pos-2 { animation: bob3 3.5s ease-in-out infinite; }
-.data-cloud.bobbing.pos-3 { animation: bob4 3.0s ease-in-out infinite; }
-.data-cloud.bobbing.pos-4 { animation: bob5 2.6s ease-in-out infinite; }
-
-/* Cloud drift away */
-.data-cloud.drift-away {
-  transition: opacity 0.5s, transform 0.5s !important;
-  opacity: 0 !important;
+/* Mystery circle */
+.mystery-circle-wrapper {
+  position: relative;
+  width: 280px;
+  height: 280px;
+  flex-shrink: 0;
 }
-.data-cloud.drift-away.pos-0,
-.data-cloud.drift-away.pos-2,
-.data-cloud.drift-away.pos-4 { transform: translateX(-120px) !important; }
-.data-cloud.drift-away.pos-1,
-.data-cloud.drift-away.pos-3 { transform: translateX(120px) !important; }
+.mystery-circle {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 2px dashed rgba(212,168,67,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  animation: circlePulse 3s ease-in-out infinite;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+}
+.mystery-circle .question-mark {
+  font-family: 'Cinzel', serif;
+  font-size: 100px;
+  font-weight: 900;
+  color: #d4a843;
+  text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.2);
+  transition: opacity 0.8s ease, color 0.3s ease;
+  user-select: none;
+  position: relative;
+  z-index: 2;
+}
 
-/* Options */
-.options-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  max-width: 600px;
-  margin: 0 auto 20px;
+@keyframes circlePulse {
+  0%, 100% { transform: scale(1.0); }
+  50% { transform: scale(1.02); }
+}
+
+/* Crayon canvas overlay */
+#crayonCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 3;
+}
+#crayonSmoothCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 4;
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.5s, transform 0.5s;
+  transition: opacity 0.5s ease;
 }
-.options-container.visible {
+
+/* Object name reveal */
+.object-name {
+  font-family: 'Cinzel', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #d4a843;
+  text-shadow: 0 0 20px rgba(212,168,67,0.4);
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s ease;
+  margin-top: 15px;
+  text-align: center;
+}
+.object-name.visible {
   opacity: 1;
   transform: translateY(0);
-}
-.option-btn {
-  font-family: 'Inter', sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  padding: 16px 20px;
-  border: 2px solid rgba(123,47,242,0.3);
-  border-radius: 14px;
-  background: rgba(123,47,242,0.08);
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.3s;
-  position: relative;
-  overflow: hidden;
-}
-.option-btn::before {
-  content: '';
-  position: absolute;
-  top: 0; left: -100%;
-  width: 100%; height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(123,47,242,0.1), transparent);
-  transition: left 0.5s;
-}
-.option-btn:hover:not(.disabled) {
-  border-color: rgba(123,47,242,0.7);
-  background: rgba(123,47,242,0.15);
-  box-shadow: 0 0 25px rgba(123,47,242,0.2);
-  transform: translateY(-2px);
-}
-.option-btn:hover::before { left: 100%; }
-.option-btn.correct {
-  border-color: #d4a843 !important;
-  background: rgba(212,168,67,0.2) !important;
-  box-shadow: 0 0 30px rgba(212,168,67,0.4) !important;
-  color: #d4a843;
-}
-.option-btn.wrong {
-  border-color: #ef4444 !important;
-  background: rgba(239,68,68,0.15) !important;
-  animation: btnShake 0.5s ease-in-out;
-}
-@keyframes btnShake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-8px); }
-  40% { transform: translateX(8px); }
-  60% { transform: translateX(-6px); }
-  80% { transform: translateX(4px); }
-}
-.option-btn.disabled {
-  pointer-events: none;
-  opacity: 0.35;
-}
-
-/* Circle shake */
-@keyframes circleShake {
-  0%, 100% { transform: translateX(0); }
-  15% { transform: translateX(-10px) rotate(-2deg); }
-  30% { transform: translateX(10px) rotate(2deg); }
-  45% { transform: translateX(-8px) rotate(-1deg); }
-  60% { transform: translateX(8px) rotate(1deg); }
-  75% { transform: translateX(-4px); }
-}
-.mystery-circle.shaking {
-  animation: circleShake 0.5s ease-in-out;
-  border-color: #ef4444 !important;
-  box-shadow: 0 0 30px rgba(239,68,68,0.3) !important;
 }
 
 /* Fun fact cloud */
 .fun-fact-cloud {
   max-width: 500px;
-  margin: 15px auto 0;
-  padding: 18px 28px;
-  background: rgba(212,168,67,0.08);
-  border: 1px solid rgba(212,168,67,0.25);
-  border-radius: 55% 45% 50% 50% / 50% 50% 55% 45%;
+  padding: 20px 28px;
+  border-radius: 40% 60% 55% 45% / 50% 40% 60% 50%;
+  background: linear-gradient(135deg, rgba(212,168,67,0.08), rgba(123,47,242,0.06));
+  border: 1px solid rgba(212,168,67,0.2);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 30px rgba(212,168,67,0.1);
   text-align: center;
+  font-size: 15px;
+  line-height: 1.6;
+  color: rgba(255,255,255,0.9);
+  margin-top: 15px;
   opacity: 0;
   transform: translateY(15px);
-  transition: opacity 0.6s, transform 0.6s;
+  transition: all 0.5s ease;
 }
 .fun-fact-cloud.visible {
   opacity: 1;
   transform: translateY(0);
 }
-.fun-fact-cloud .fact-label {
-  color: #d4a843;
-  font-weight: 700;
-  font-size: 0.9rem;
-  margin-bottom: 5px;
+
+/* Answer options */
+.options-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 500px;
+  opacity: 0;
+  transform: translateY(15px);
+  transition: all 0.5s ease;
 }
-.fun-fact-cloud .fact-text {
-  color: rgba(255,255,255,0.85);
-  font-size: 0.95rem;
-  line-height: 1.5;
+.options-grid.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.option-btn {
+  padding: 14px 20px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #ffffff;
+  background: rgba(123,47,242,0.08);
+  border: 2px solid rgba(123,47,242,0.35);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(6px);
+  position: relative;
+  overflow: hidden;
+}
+.option-btn:hover:not(:disabled) {
+  border-color: rgba(123,47,242,0.7);
+  box-shadow: 0 0 20px rgba(123,47,242,0.2);
+  background: rgba(123,47,242,0.15);
+  transform: translateY(-2px);
+}
+.option-btn.correct {
+  border-color: #d4a843 !important;
+  background: rgba(212,168,67,0.15) !important;
+  box-shadow: 0 0 25px rgba(212,168,67,0.3) !important;
+  color: #d4a843 !important;
+}
+.option-btn.wrong {
+  border-color: #e74c3c !important;
+  background: rgba(231,76,60,0.12) !important;
+  animation: shakeBtn 0.5s ease;
+}
+.option-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@keyframes shakeBtn {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-5px); }
+  80% { transform: translateX(5px); }
+}
+@keyframes shakeCircle {
+  0%, 100% { transform: translateX(0) scale(1); }
+  20% { transform: translateX(-6px) scale(1); }
+  40% { transform: translateX(6px) scale(1); }
+  60% { transform: translateX(-4px) scale(1); }
+  80% { transform: translateX(4px) scale(1); }
+}
+
+/* Wrong feedback text */
+.wrong-feedback {
+  color: #e74c3c;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 10px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  text-align: center;
+}
+.wrong-feedback.visible {
+  opacity: 1;
 }
 
 /* Next button */
 .next-btn {
-  display: block;
-  margin: 20px auto 0;
-  padding: 14px 50px;
+  display: inline-block;
+  margin-top: 20px;
+  padding: 14px 36px;
   font-family: 'Inter', sans-serif;
-  font-size: 1.05rem;
+  font-size: 16px;
   font-weight: 700;
-  color: #0a0e27;
-  background: linear-gradient(135deg, #d4a843, #f0cc6b);
+  color: #1a1040;
+  background: linear-gradient(135deg, #d4a843, #f0c860);
   border: none;
-  border-radius: 14px;
+  border-radius: 30px;
   cursor: pointer;
-  transition: all 0.3s;
   box-shadow: 0 4px 20px rgba(212,168,67,0.3);
+  transition: all 0.3s ease;
   opacity: 0;
   transform: translateY(10px);
-  animation: fadeSlideUp 0.4s ease-out 0.3s forwards;
 }
-@keyframes fadeSlideUp {
-  to { opacity: 1; transform: translateY(0); }
+.next-btn.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 .next-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 30px rgba(212,168,67,0.5);
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 30px rgba(212,168,67,0.4);
 }
 
 /* End screen */
 .end-screen {
+  display: none;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s, transform 0.8s;
+  padding-top: 40px;
 }
-.end-screen.visible {
-  opacity: 1;
-  transform: translateY(0);
+.end-screen.active {
+  display: flex;
 }
 .end-title {
   font-family: 'Cinzel', serif;
-  font-size: 2.6rem;
+  font-size: 40px;
   font-weight: 900;
   color: #d4a843;
-  text-shadow: 0 0 30px rgba(212,168,67,0.5), 0 0 60px rgba(212,168,67,0.3);
-  animation: titleGlow 2s ease-in-out infinite;
+  text-shadow: 0 0 30px rgba(212,168,67,0.5);
   margin-bottom: 20px;
 }
 .end-score {
-  font-size: 1.3rem;
-  color: rgba(255,255,255,0.8);
+  font-size: 20px;
+  color: rgba(255,255,255,0.85);
   margin-bottom: 12px;
 }
-.end-score span {
-  color: #d4a843;
-  font-weight: 700;
-  font-size: 1.6rem;
-}
 .end-message {
-  color: rgba(255,255,255,0.55);
-  font-size: 1rem;
-  margin-bottom: 35px;
-}
-.end-btn {
-  display: inline-block;
-  padding: 16px 50px;
-  font-family: 'Inter', sans-serif;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #0a0e27;
-  background: linear-gradient(135deg, #d4a843, #f0cc6b);
-  border: none;
-  border-radius: 14px;
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.3s;
-  box-shadow: 0 4px 20px rgba(212,168,67,0.3);
-}
-.end-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 30px rgba(212,168,67,0.5);
+  font-size: 16px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 30px;
+  max-width: 400px;
+  line-height: 1.5;
 }
 
-canvas#particles {
+#celebrationCanvas {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  z-index: 10;
+  z-index: 50;
   pointer-events: none;
-}
-
-/* Accretion disk for black hole */
-.accretion-disk {
-  position: absolute;
-  top: 50%; left: 50%;
-  width: 110%; height: 110%;
-  transform: translate(-50%, -50%);
-  border-radius: 50%;
-  border: 3px solid transparent;
-  box-shadow: 0 0 30px rgba(123,47,242,0.6), 0 0 60px rgba(123,47,242,0.3), inset 0 0 30px rgba(123,47,242,0.2);
-  opacity: 0;
-  transition: opacity 0.8s;
-  z-index: 5;
-  pointer-events: none;
-}
-.accretion-disk.visible {
-  opacity: 1;
-}
-
-/* Circle enter/exit */
-.mystery-circle-wrap.shrinking {
-  transition: transform 0.5s ease-in, opacity 0.5s ease-in;
-  transform: scale(0.02);
-  opacity: 0;
-}
-.mystery-circle-wrap.expanding {
-  animation: expandBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-@keyframes expandBounce {
-  from { transform: scale(0.02); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
 }
 
 /* Responsive */
-@media (max-width: 900px) {
-  .mystery-circle-wrap { width: 200px; height: 200px; }
-  .mystery-question { font-size: 60px; }
-  .scene-wrapper { min-height: 340px; }
-  .data-cloud.pos-0 { top: -20px; left: -160px; }
-  .data-cloud.pos-1 { top: -20px; right: -160px; }
-  .data-cloud.pos-2 { top: 80px; left: -170px; }
-  .data-cloud.pos-3 { top: 80px; right: -170px; }
-  .data-cloud.pos-4 { top: 180px; left: -170px; }
-  .data-cloud { min-width: 120px; padding: 10px 14px; }
-  .data-cloud .cloud-label { font-size: 0.6rem; }
-  .data-cloud .cloud-value { font-size: 0.8rem; }
-}
-@media (max-width: 640px) {
-  .game-title { font-size: 2rem; }
-  .mystery-circle-wrap { width: 160px; height: 160px; }
-  .mystery-question { font-size: 48px; }
-  .scene-wrapper { min-height: 500px; flex-direction: column; }
-  .options-container { grid-template-columns: 1fr; }
-  .container { padding: 15px 12px 40px; }
-  /* Stack clouds vertically on mobile */
-  .data-cloud { position: relative !important; top: auto !important; left: auto !important; right: auto !important; min-width: auto; margin: 4px auto; }
-  .data-cloud.from-left, .data-cloud.from-right { transform: translateY(20px); }
-  .data-cloud.visible { transform: translateY(0); }
-  .scene-wrapper { flex-wrap: wrap; }
-  .object-name-reveal { font-size: 1.2rem; bottom: -35px; }
+@media (max-width: 700px) {
+  .data-circle-row {
+    flex-direction: column;
+    gap: 20px;
+    min-height: auto;
+  }
+  .data-column {
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    flex: auto;
+    max-width: 100%;
+  }
+  .data-cloud { padding: 10px 14px; }
+  .mystery-circle-wrapper { order: -1; }
+  .title { font-size: 30px; }
+  .mystery-circle-wrapper, .mystery-circle, #crayonCanvas, #crayonSmoothCanvas {
+    width: 220px;
+    height: 220px;
+  }
+  .mystery-circle .question-mark { font-size: 70px; }
 }
 </style>
 </head>
 <body>
-
 <canvas id="starfield"></canvas>
-<canvas id="particles"></canvas>
+<canvas id="celebrationCanvas"></canvas>
 
 <div class="container">
-  <a href="index.html" class="back-btn">&#8592; Volver</a>
+  <a href="index.html" class="back-btn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+    Volver
+  </a>
 
-  <h1 class="game-title">Analiza y Descubre</h1>
-  <p class="subtitle">Analiza las pistas y descubre el objeto estelar misterioso</p>
+  <div class="title-area">
+    <h1 class="title">Analiza y Descubre</h1>
+    <p class="subtitle">Analiza los datos del telescopio e identifica el objeto misterioso</p>
+  </div>
 
-  <div class="progress-bar" id="progressBar"></div>
+  <div class="progress-dots" id="progressDots">
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+    <div class="progress-dot"></div>
+  </div>
 
-  <div id="roundLabel" class="round-label-top"></div>
+  <div class="game-area" id="gameArea">
+    <div class="data-circle-row">
+      <div class="data-column" id="dataLeft"></div>
 
-  <div id="gameArea"></div>
-  <div id="endScreen" class="end-screen" style="display:none;"></div>
+      <div class="mystery-circle-wrapper">
+        <div class="mystery-circle" id="mysteryCircle">
+          <span class="question-mark" id="questionMark">?</span>
+        </div>
+        <canvas id="crayonCanvas" width="280" height="280"></canvas>
+        <canvas id="crayonSmoothCanvas" width="280" height="280"></canvas>
+      </div>
+
+      <div class="data-column" id="dataRight"></div>
+    </div>
+
+    <div class="object-name" id="objectName"></div>
+    <div class="fun-fact-cloud" id="funFact"></div>
+
+    <div class="options-grid" id="optionsGrid"></div>
+    <div class="wrong-feedback" id="wrongFeedback">¡Intentalo de nuevo!</div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextRound()">Siguiente &gt;</button>
+  </div>
+
+  <div class="end-screen" id="endScreen">
+    <h2 class="end-title">¡Mision Completada!</h2>
+    <p class="end-score" id="endScore"></p>
+    <p class="end-message" id="endMessage"></p>
+    <button class="next-btn visible" onclick="location.href='index.html'" style="opacity:1;transform:none;">Volver al inicio</button>
+  </div>
 </div>
 
 <script>
-// === STARFIELD ===
+// ========== STARFIELD ==========
 (function() {
-  const c = document.getElementById('starfield');
-  const ctx = c.getContext('2d');
+  const canvas = document.getElementById('starfield');
+  const ctx = canvas.getContext('2d');
   let stars = [];
-  function resize() { c.width = window.innerWidth; c.height = window.innerHeight; }
-  function init() {
-    resize();
-    stars = [];
-    const count = Math.floor((c.width * c.height) / 3000);
-    for (let i = 0; i < count; i++) {
-      stars.push({
-        x: Math.random() * c.width, y: Math.random() * c.height,
-        r: Math.random() * 1.5 + 0.3, a: Math.random() * 0.8 + 0.2,
-        dx: (Math.random() - 0.5) * 0.15, dy: (Math.random() - 0.5) * 0.1,
-        ts: Math.random() * 0.02 + 0.005, to: Math.random() * Math.PI * 2
-      });
-    }
+  const STAR_COUNT = 200;
+
+  function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
   }
-  let t = 0;
-  function draw() {
-    ctx.clearRect(0, 0, c.width, c.height);
-    t++;
+  window.addEventListener('resize', resize);
+  resize();
+
+  for (let i = 0; i < STAR_COUNT; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.5 + 0.3,
+      alpha: Math.random(),
+      speed: Math.random() * 0.3 + 0.05,
+      twinkleSpeed: Math.random() * 0.015 + 0.005,
+      twinkleDir: Math.random() > 0.5 ? 1 : -1
+    });
+  }
+
+  function drawStars() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     for (const s of stars) {
-      s.x += s.dx; s.y += s.dy;
-      if (s.x < 0) s.x = c.width; if (s.x > c.width) s.x = 0;
-      if (s.y < 0) s.y = c.height; if (s.y > c.height) s.y = 0;
-      const alpha = s.a * (0.6 + 0.4 * Math.sin(t * s.ts + s.to));
+      s.alpha += s.twinkleSpeed * s.twinkleDir;
+      if (s.alpha >= 1) { s.alpha = 1; s.twinkleDir = -1; }
+      if (s.alpha <= 0.1) { s.alpha = 0.1; s.twinkleDir = 1; }
+      s.y += s.speed;
+      if (s.y > canvas.height + 5) { s.y = -5; s.x = Math.random() * canvas.width; }
       ctx.beginPath();
       ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+      ctx.fillStyle = `rgba(255,255,255,${s.alpha})`;
       ctx.fill();
     }
-    requestAnimationFrame(draw);
+    requestAnimationFrame(drawStars);
   }
-  init(); draw();
-  window.addEventListener('resize', init);
+  drawStars();
 })();
 
-// === PARTICLES ===
-const pCanvas = document.getElementById('particles');
-const pCtx = pCanvas.getContext('2d');
-let particles = [];
-function resizeP() { pCanvas.width = window.innerWidth; pCanvas.height = window.innerHeight; }
-resizeP(); window.addEventListener('resize', resizeP);
-
-function spawnBurst(x, y, count, colors) {
-  for (let i = 0; i < count; i++) {
-    const angle = Math.random() * Math.PI * 2;
-    const speed = Math.random() * 6 + 2;
-    particles.push({ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed - 2,
-      life: 1, decay: Math.random()*0.015+0.008, r: Math.random()*4+2,
-      color: colors[Math.floor(Math.random()*colors.length)] });
-  }
-}
-function spawnFireworks() {
-  for (let i = 0; i < 5; i++) {
-    setTimeout(() => {
-      spawnBurst(
-        Math.random()*pCanvas.width*0.6 + pCanvas.width*0.2,
-        Math.random()*pCanvas.height*0.4 + pCanvas.height*0.1,
-        60, ['#d4a843','#f0cc6b','#7b2ff2','#ff3cac','#4ade80','#ffffff']);
-    }, i * 400);
-  }
-}
-(function animP() {
-  pCtx.clearRect(0, 0, pCanvas.width, pCanvas.height);
-  for (let i = particles.length - 1; i >= 0; i--) {
-    const p = particles[i];
-    p.x += p.vx; p.y += p.vy; p.vy += 0.08; p.life -= p.decay;
-    if (p.life <= 0) { particles.splice(i, 1); continue; }
-    pCtx.globalAlpha = p.life;
-    pCtx.beginPath(); pCtx.arc(p.x, p.y, p.r * p.life, 0, Math.PI * 2);
-    pCtx.fillStyle = p.color; pCtx.fill();
-  }
-  pCtx.globalAlpha = 1;
-  requestAnimationFrame(animP);
-})();
-
-// roundRect polyfill for older browsers
-if (!CanvasRenderingContext2D.prototype.roundRect) {
-  CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-    if (typeof r === 'number') r = [r,r,r,r];
-    else if (!Array.isArray(r)) r = [r,r,r,r];
-    const [tl,tr,br,bl] = r;
-    this.moveTo(x + tl, y);
-    this.lineTo(x + w - tr, y);
-    this.quadraticCurveTo(x + w, y, x + w, y + tr);
-    this.lineTo(x + w, y + h - br);
-    this.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
-    this.lineTo(x + bl, y + h);
-    this.quadraticCurveTo(x, y + h, x, y + h - bl);
-    this.lineTo(x, y + tl);
-    this.quadraticCurveTo(x, y, x + tl, y);
-    this.closePath();
-    return this;
-  };
-}
-
-// === GAME DATA ===
+// ========== GAME DATA ==========
 const rounds = [
   {
-    label: 'Ronda 1 \u2014 F\u00e1cil',
+    name: 'El Sol',
     data: [
       { label: 'Temperatura', value: '5,778 K' },
       { label: 'Masa', value: '1.0 M\u2609' },
       { label: 'Radio', value: '1.0 R\u2609' },
-      { label: 'Luminosidad', value: '1.0 L\u2609' }
+      { label: 'Luminosidad', value: '1.0 L\u2609' },
+      { label: 'Pista', value: 'Es la estrella m\u00e1s cercana a la Tierra', isHint: true }
     ],
-    hint: 'Es la estrella m\u00e1s cercana a la Tierra',
     options: ['El Sol', 'Sirio', 'Betelgeuse', 'Alfa Centauri'],
     answer: 0,
-    name: 'El Sol',
-    funFact: '\u00a1El Sol contiene el 99.86% de toda la masa del Sistema Solar!',
-    crayonColor: '#f0c040',
-    gradient: { inner: '#fff8e0', outer: '#f0a030' },
-    special: null
+    fact: '\u00a1El Sol contiene el 99.86% de toda la masa del Sistema Solar!',
+    crayon: '#E8A817',
+    fill: ['#FFD700', '#FFA500']
   },
   {
-    label: 'Ronda 2 \u2014 Media',
+    name: 'Enana Blanca',
     data: [
       { label: 'Temperatura', value: '25,000 K' },
       { label: 'Masa', value: '0.6 M\u2609' },
       { label: 'Radio', value: '0.01 R\u2609' },
-      { label: 'Luminosidad', value: '0.001 L\u2609' }
+      { label: 'Luminosidad', value: '0.001 L\u2609' },
+      { label: 'Pista', value: 'Es muy caliente pero muy peque\u00f1a \u2014 del tama\u00f1o de la Tierra', isHint: true }
     ],
-    hint: 'Es muy caliente pero muy peque\u00f1a \u2014 del tama\u00f1o de la Tierra',
     options: ['Enana Roja', 'Enana Blanca', 'Estrella de Neutrones', 'Gigante Azul'],
     answer: 1,
-    name: 'Enana Blanca',
-    funFact: '\u00a1Una cucharada de enana blanca pesar\u00eda unas 5 toneladas!',
-    crayonColor: '#b0d4ff',
-    gradient: { inner: '#ffffff', outer: '#80b0ff' },
-    special: null
+    fact: '\u00a1Una cucharada de enana blanca pesar\u00eda unas 5 toneladas!',
+    crayon: '#B8D4E3',
+    fill: ['#E8F4FD', '#A8C8D8']
   },
   {
-    label: 'Ronda 3 \u2014 Media',
+    name: 'Gigante Roja',
     data: [
       { label: 'Temperatura', value: '3,500 K' },
       { label: 'Masa', value: '1.2 M\u2609' },
       { label: 'Radio', value: '100 R\u2609' },
-      { label: 'Luminosidad', value: '1,000 L\u2609' }
+      { label: 'Luminosidad', value: '1,000 L\u2609' },
+      { label: 'Pista', value: 'Es enorme y fr\u00eda para ser una estrella. Es una estrella al final de su vida', isHint: true }
     ],
-    hint: 'Es enorme y fr\u00eda para ser una estrella. Es una estrella al final de su vida',
     options: ['Supergigante Azul', 'Gigante Roja', 'Pulsar', 'Estrella Variable'],
     answer: 1,
-    name: 'Gigante Roja',
-    funFact: '\u00a1Cuando el Sol se convierta en gigante roja, llegar\u00e1 hasta la \u00f3rbita de Marte!',
-    crayonColor: '#e04030',
-    gradient: { inner: '#ff6040', outer: '#a01010' },
-    special: null
+    fact: '\u00a1Cuando el Sol se convierta en gigante roja, llegar\u00e1 hasta la \u00f3rbita de Marte!',
+    crayon: '#C0392B',
+    fill: ['#E74C3C', '#8B0000']
   },
   {
-    label: 'Ronda 4 \u2014 Dif\u00edcil',
+    name: 'Estrella de Neutrones',
     data: [
       { label: 'Temperatura', value: '600,000 K' },
       { label: 'Masa', value: '1.4 M\u2609' },
       { label: 'Radio', value: '0.00001 R\u2609' },
-      { label: 'Luminosidad', value: '0.1 L\u2609' }
+      { label: 'Luminosidad', value: '0.1 L\u2609' },
+      { label: 'Pista', value: 'Es incre\u00edblemente densa \u2014 una cucharada pesa mil millones de toneladas', isHint: true }
     ],
-    hint: 'Es incre\u00edblemente densa \u2014 una cucharada pesa mil millones de toneladas',
     options: ['Enana Blanca', 'Agujero Negro', 'Estrella de Neutrones', 'Qu\u00e1sar'],
     answer: 2,
-    name: 'Estrella de Neutrones',
-    funFact: '\u00a1Las estrellas de neutrones giran hasta 716 veces por SEGUNDO!',
-    crayonColor: '#7b5fff',
-    gradient: { inner: '#c0a0ff', outer: '#4020a0' },
-    special: null
+    fact: '\u00a1Las estrellas de neutrones giran hasta 716 veces por SEGUNDO!',
+    crayon: '#6C3CE0',
+    fill: ['#7B2FF2', '#00B4D8']
   },
   {
-    label: 'Ronda 5 \u2014 Experto',
+    name: 'Agujero Negro',
     data: [
       { label: 'Temperatura', value: '0 K (no emite luz)' },
       { label: 'Masa', value: '10 M\u2609' },
-      { label: 'Radio', value: '0.00003 R\u2609' },
-      { label: 'Luminosidad', value: '0 (disco de acreci\u00f3n)' }
+      { label: 'Radio', value: '0.00003 R\u2609 (horizonte de eventos)' },
+      { label: 'Luminosidad', value: '0 (disco de acreci\u00f3n brilla)' },
+      { label: 'Pista', value: 'Ni siquiera la luz puede escapar de este objeto', isHint: true }
     ],
-    hint: 'Ni siquiera la luz puede escapar de este objeto',
     options: ['Estrella de Neutrones', 'Agujero Negro', 'Materia Oscura', 'Nebulosa Oscura'],
     answer: 1,
-    name: 'Agujero Negro',
-    funFact: '\u00a1El agujero negro m\u00e1s cercano a la Tierra est\u00e1 a solo 1,560 a\u00f1os luz!',
-    crayonColor: '#2a1050',
-    gradient: { inner: '#1a0a30', outer: '#000000' },
-    special: 'accretion'
+    fact: '\u00a1El agujero negro m\u00e1s cercano a la Tierra est\u00e1 a solo 1,560 a\u00f1os luz!',
+    crayon: '#3D0066',
+    fill: ['#2D004D', '#6A0DAD']
   }
 ];
 
+// ========== GAME STATE ==========
 let currentRound = 0;
-let score = 0;
-let firstAttempt = [true, true, true, true, true];
+let score = 0; // first-attempt correct
+let firstAttempt = true;
 let animating = false;
 
-// === PROGRESS ===
-function renderProgress() {
-  const bar = document.getElementById('progressBar');
-  bar.innerHTML = '';
-  for (let i = 0; i < 5; i++) {
-    const dot = document.createElement('div');
-    dot.className = 'progress-dot';
-    if (i < currentRound) dot.classList.add('completed');
-    if (i === currentRound) dot.classList.add('active');
-    bar.appendChild(dot);
-  }
-}
+const progressDots = document.querySelectorAll('.progress-dot');
+const gameArea = document.getElementById('gameArea');
+const dataLeft = document.getElementById('dataLeft');
+const dataRight = document.getElementById('dataRight');
+const mysteryCircle = document.getElementById('mysteryCircle');
+const questionMark = document.getElementById('questionMark');
+const optionsGrid = document.getElementById('optionsGrid');
+const objectNameEl = document.getElementById('objectName');
+const funFactEl = document.getElementById('funFact');
+const wrongFeedback = document.getElementById('wrongFeedback');
+const nextBtn = document.getElementById('nextBtn');
+const endScreen = document.getElementById('endScreen');
 
-// === GET CIRCLE SIZE (responsive) ===
+const crayonCanvas = document.getElementById('crayonCanvas');
+const crayonCtx = crayonCanvas.getContext('2d');
+const smoothCanvas = document.getElementById('crayonSmoothCanvas');
+const smoothCtx = smoothCanvas.getContext('2d');
+
 function getCircleSize() {
-  const w = window.innerWidth;
-  if (w <= 640) return 160;
-  if (w <= 900) return 200;
-  return 280;
+  return window.innerWidth <= 700 ? 220 : 280;
 }
 
-// === RENDER ROUND ===
-function renderRound(index) {
-  const round = rounds[index];
-  const area = document.getElementById('gameArea');
-  area.style.display = 'block';
-  area.innerHTML = '';
+// ========== START ROUND ==========
+function startRound() {
+  const round = rounds[currentRound];
+  firstAttempt = true;
+  animating = false;
 
-  document.getElementById('roundLabel').textContent = round.label;
+  // Reset UI
+  dataLeft.innerHTML = '';
+  dataRight.innerHTML = '';
+  optionsGrid.innerHTML = '';
+  optionsGrid.classList.remove('visible');
+  objectNameEl.textContent = '';
+  objectNameEl.classList.remove('visible');
+  funFactEl.textContent = '';
+  funFactEl.classList.remove('visible');
+  wrongFeedback.classList.remove('visible');
+  nextBtn.classList.remove('visible');
+  questionMark.style.opacity = '1';
+  questionMark.style.color = '#d4a843';
+  mysteryCircle.style.animation = 'circlePulse 3s ease-in-out infinite';
+  mysteryCircle.style.borderColor = 'rgba(212,168,67,0.5)';
 
-  // Scene wrapper
-  const sceneWrap = document.createElement('div');
-  sceneWrap.className = 'scene-wrapper';
-  sceneWrap.id = 'sceneWrapper';
+  // Clear canvases
+  const sz = getCircleSize();
+  crayonCanvas.width = sz;
+  crayonCanvas.height = sz;
+  smoothCanvas.width = sz;
+  smoothCanvas.height = sz;
+  smoothCanvas.style.opacity = '0';
+  crayonCtx.clearRect(0, 0, sz, sz);
+  smoothCtx.clearRect(0, 0, sz, sz);
 
-  // Mystery circle
-  const circleWrap = document.createElement('div');
-  circleWrap.className = 'mystery-circle-wrap expanding';
-  circleWrap.id = 'circleWrap';
-
-  const circle = document.createElement('div');
-  circle.className = 'mystery-circle';
-  circle.id = 'mysteryCircle';
-
-  const question = document.createElement('div');
-  question.className = 'mystery-question';
-  question.id = 'questionMark';
-  question.textContent = '?';
-
-  const crayonCanvas = document.createElement('canvas');
-  crayonCanvas.id = 'crayonCanvas';
-
-  const gradOverlay = document.createElement('div');
-  gradOverlay.className = 'gradient-overlay';
-  gradOverlay.id = 'gradientOverlay';
-
-  const accDisk = document.createElement('div');
-  accDisk.className = 'accretion-disk';
-  accDisk.id = 'accretionDisk';
-
-  const objName = document.createElement('div');
-  objName.className = 'object-name-reveal';
-  objName.id = 'objectName';
-  objName.textContent = round.name;
-
-  circle.appendChild(question);
-  circle.appendChild(crayonCanvas);
-  circle.appendChild(gradOverlay);
-  circleWrap.appendChild(circle);
-  circleWrap.appendChild(accDisk);
-  circleWrap.appendChild(objName);
-
-  // Data clouds (absolutely positioned around circle)
-  const cloudPositions = [
-    { cls: 'pos-0', from: 'from-left' },
-    { cls: 'pos-1', from: 'from-right' },
-    { cls: 'pos-2', from: 'from-left' },
-    { cls: 'pos-3', from: 'from-right' },
-    { cls: 'pos-4', from: 'from-left' }
-  ];
-
-  // 4 data + 1 hint = 5 clouds
-  const allData = [...round.data.map((d,i) => ({...d, isHint: false, idx: i})),
-                    { label: 'Pista', value: round.hint, isHint: true, idx: 4 }];
-
-  const clouds = [];
-  allData.forEach((d, i) => {
-    const cloud = document.createElement('div');
-    const pos = cloudPositions[i];
-    cloud.className = `data-cloud ${pos.cls} ${pos.from}` + (d.isHint ? ' hint-cloud' : '');
-    cloud.style.background = d.isHint
-      ? 'rgba(74,222,128,0.08)'
-      : 'rgba(123,47,242,0.1)';
-    cloud.style.border = d.isHint
-      ? '1px solid rgba(74,222,128,0.2)'
-      : '1px solid rgba(123,47,242,0.15)';
-    cloud.innerHTML = `<div class="cloud-label">${d.label}</div><div class="cloud-value">${d.value}</div>`;
-    circleWrap.appendChild(cloud);
-    clouds.push(cloud);
+  // Update progress dots
+  progressDots.forEach((dot, i) => {
+    dot.classList.remove('active');
+    if (i === currentRound) dot.classList.add('active');
   });
 
-  sceneWrap.appendChild(circleWrap);
-  area.appendChild(sceneWrap);
+  // Create data clouds
+  const leftData = [round.data[0], round.data[1], round.data[2]];
+  const rightData = [round.data[3], round.data[4]];
 
-  // Options
-  const optionsDiv = document.createElement('div');
-  optionsDiv.className = 'options-container';
-  optionsDiv.id = 'optionsContainer';
-  area.appendChild(optionsDiv);
-
-  // Feedback/fun fact area
-  const feedbackDiv = document.createElement('div');
-  feedbackDiv.id = 'feedbackArea';
-  area.appendChild(feedbackDiv);
-
-  // Size the crayon canvas
-  requestAnimationFrame(() => {
-    const sz = circleWrap.offsetWidth;
-    const dpr = window.devicePixelRatio || 1;
-    crayonCanvas.width = sz * dpr;
-    crayonCanvas.height = sz * dpr;
-    crayonCanvas.style.width = sz + 'px';
-    crayonCanvas.style.height = sz + 'px';
+  leftData.forEach((d, i) => {
+    const cloud = createCloud(d, false);
+    dataLeft.appendChild(cloud);
+    setTimeout(() => cloud.classList.add('visible'), 400 + i * 600);
   });
 
-  // Animate clouds in one by one
-  clouds.forEach((cloud, i) => {
-    setTimeout(() => {
-      cloud.classList.add('visible');
-      // Start bobbing after settling
-      setTimeout(() => cloud.classList.add('bobbing'), 600);
-    }, 600 + i * 800);
+  rightData.forEach((d, i) => {
+    const cloud = createCloud(d, true);
+    dataRight.appendChild(cloud);
+    setTimeout(() => cloud.classList.add('visible'), 400 + (i + 3) * 600);
   });
 
-  // Show options after all clouds
-  setTimeout(() => showOptions(round, index), 600 + clouds.length * 800 + 400);
+  // Create options after all clouds appear
+  const totalDelay = 400 + 5 * 600;
+  setTimeout(() => {
+    round.options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.onclick = () => handleAnswer(i, btn);
+      optionsGrid.appendChild(btn);
+    });
+    optionsGrid.classList.add('visible');
+  }, totalDelay);
 }
 
-function showOptions(round, roundIndex) {
-  const container = document.getElementById('optionsContainer');
-  container.innerHTML = '';
-  round.options.forEach((opt, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'option-btn';
-    btn.textContent = opt;
-    btn.addEventListener('click', () => handleAnswer(i, roundIndex, btn));
-    container.appendChild(btn);
-  });
-  container.classList.add('visible');
+function createCloud(data, fromRight) {
+  const cloud = document.createElement('div');
+  cloud.className = 'data-cloud' + (fromRight ? ' from-right' : '') + (data.isHint ? ' hint-cloud' : '');
+  cloud.innerHTML = `<span class="data-label">${data.isHint ? 'Pista' : data.label}</span><span class="data-value">${data.value}</span>`;
+  return cloud;
 }
 
-function handleAnswer(chosen, roundIndex, btn) {
+// ========== HANDLE ANSWER ==========
+function handleAnswer(index, btn) {
   if (animating) return;
-  const round = rounds[roundIndex];
-  const options = document.querySelectorAll('.option-btn');
-  const circle = document.getElementById('mysteryCircle');
+  const round = rounds[currentRound];
 
-  if (chosen === round.answer) {
-    // === CORRECT ===
+  if (index === round.answer) {
+    // Correct!
     animating = true;
     btn.classList.add('correct');
-    options.forEach((o, i) => { if (i !== chosen) o.classList.add('disabled'); });
-
-    // Burst
-    const rect = document.getElementById('circleWrap').getBoundingClientRect();
-    spawnBurst(rect.left + rect.width/2, rect.top + rect.height/2, 35,
-      ['#d4a843','#f0cc6b','#fff5d4','#ffffff']);
-
-    if (firstAttempt[roundIndex]) score++;
-
+    if (firstAttempt) {
+      score++;
+      progressDots[currentRound].classList.add('correct');
+    }
+    // Disable all buttons
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    wrongFeedback.classList.remove('visible');
     // Start crayon animation
-    startCrayonAnimation(roundIndex);
-
+    startCrayonAnimation(round);
   } else {
-    // === WRONG ===
-    firstAttempt[roundIndex] = false;
+    // Wrong
+    firstAttempt = false;
+    progressDots[currentRound].classList.add('wrong');
     btn.classList.add('wrong');
-    circle.classList.add('shaking');
+    btn.disabled = true;
+    mysteryCircle.style.animation = 'shakeCircle 0.5s ease';
+    questionMark.style.color = '#e74c3c';
+    wrongFeedback.classList.add('visible');
     setTimeout(() => {
-      btn.classList.remove('wrong');
-      btn.classList.add('disabled');
-      circle.classList.remove('shaking');
+      mysteryCircle.style.animation = 'circlePulse 3s ease-in-out infinite';
+      questionMark.style.color = '#d4a843';
     }, 600);
+    setTimeout(() => wrongFeedback.classList.remove('visible'), 1500);
   }
 }
 
-// ============================================================
-// === THE CRAYON COLORING ANIMATION ===
-// ============================================================
-function startCrayonAnimation(roundIndex) {
-  const round = rounds[roundIndex];
-  const canvas = document.getElementById('crayonCanvas');
-  const ctx = canvas.getContext('2d');
-  const questionEl = document.getElementById('questionMark');
-  const gradOverlay = document.getElementById('gradientOverlay');
-  const objNameEl = document.getElementById('objectName');
-  const accDisk = document.getElementById('accretionDisk');
+// ========== CRAYON ANIMATION ==========
+function startCrayonAnimation(round) {
+  const sz = getCircleSize();
+  const radius = sz / 2 - 2;
+  const cx = sz / 2;
+  const cy = sz / 2;
+  const ctx = crayonCtx;
 
-  const W = canvas.width;
-  const H = canvas.height;
-  const R = W / 2;
-  const cx = W / 2;
-  const cy = H / 2;
-  const dpr = window.devicePixelRatio || 1;
+  // Setup clip
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.clip();
 
-  // Parse crayon color
-  function hexToRgb(hex) {
-    const r = parseInt(hex.slice(1,3),16);
-    const g = parseInt(hex.slice(3,5),16);
-    const b = parseInt(hex.slice(5,7),16);
-    return {r,g,b};
-  }
-  const cc = hexToRgb(round.crayonColor);
+  const numStrokes = 8;
+  const strokeHeight = (sz * 0.85) / numStrokes;
+  const startY = sz * 0.08;
+  const crayonColor = round.crayon;
+  const fillColors = round.fill;
 
-  // Crayon parameters
-  const totalStrokes = 14;
-  const strokeHeight = (R * 2 * 0.92) / totalStrokes;
-  const startY = cy - R * 0.92;
-  const crayonW = 60 * dpr;
-  const crayonH = 14 * dpr;
-  const tipLen = 16 * dpr;
-  const totalDuration = 2800; // ms
-  const strokeDuration = totalDuration / totalStrokes;
+  // Crayon properties
+  const crayonW = 80;
+  const crayonH = 18;
 
   let currentStroke = 0;
-  let strokeProgress = 0; // 0-1
-  let startTime = null;
-  let questionFaded = false;
-  let crayonDone = false;
-  let crayonLiftStart = null;
-  let smoothStart = null;
-  let phase = 'coloring'; // coloring, lifting, smoothing, done
+  let strokeProgress = 0; // 0 to 1
+  const strokeSpeed = 0.055;
 
-  // Pre-generate random values for crayon texture (avoids flicker)
-  const numLines = 18;
-  const strokeRands = [];
-  for (let s = 0; s < totalStrokes; s++) {
-    const lines = [];
-    for (let l = 0; l < numLines; l++) {
-      const segs = [];
-      for (let seg = 0; seg < 200; seg++) {
-        segs.push((Math.random() - 0.5) * 1.5);
-      }
-      lines.push({ alpha: 0.12 + Math.random() * 0.18, segs });
-    }
-    strokeRands.push(lines);
+  function getStrokeX(progress, strokeIdx) {
+    const goingRight = strokeIdx % 2 === 0;
+    const margin = 10;
+    const startX = goingRight ? margin : sz - margin;
+    const endX = goingRight ? sz - margin : margin;
+    return startX + (endX - startX) * progress;
   }
 
-  // Offscreen buffer for completed strokes (avoids redrawing)
-  const bufferCanvas = document.createElement('canvas');
-  bufferCanvas.width = W;
-  bufferCanvas.height = H;
-  const bufCtx = bufferCanvas.getContext('2d');
-  let lastCompletedStroke = -1;
+  function getStrokeY(strokeIdx) {
+    return startY + strokeIdx * strokeHeight + strokeHeight / 2;
+  }
 
-  function drawCrayonFrame(timestamp) {
-    if (!startTime) startTime = timestamp;
-    const elapsed = timestamp - startTime;
-
-    ctx.clearRect(0, 0, W, H);
-
-    // Render newly completed strokes to buffer
-    while (lastCompletedStroke < currentStroke - 1 && lastCompletedStroke < totalStrokes - 1) {
-      lastCompletedStroke++;
-      bufCtx.save();
-      bufCtx.beginPath();
-      bufCtx.arc(cx, cy, R - 2*dpr, 0, Math.PI * 2);
-      bufCtx.clip();
-      drawCrayonStroke(bufCtx, lastCompletedStroke, 1, cc);
-      bufCtx.restore();
-    }
-
-    // Clip to circle
+  function drawCrayonStrokes(upToStroke, upToProgress) {
+    // Don't clear — rebuild each frame for simplicity, but we save perf by only drawing new stuff
+    // Actually, clear and redraw is fine at this scale
+    ctx.clearRect(0, 0, sz, sz);
     ctx.save();
     ctx.beginPath();
-    ctx.arc(cx, cy, R - 2*dpr, 0, Math.PI * 2);
+    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
     ctx.clip();
 
-    // Draw buffered completed strokes
-    ctx.drawImage(bufferCanvas, 0, 0);
+    for (let s = 0; s <= upToStroke && s < numStrokes; s++) {
+      const prog = (s < upToStroke) ? 1.0 : upToProgress;
+      const y = getStrokeY(s);
+      const goingRight = s % 2 === 0;
+      const margin = 10;
+      const startX = goingRight ? margin : sz - margin;
+      const endX = goingRight ? sz - margin : margin;
+      const currentX = startX + (endX - startX) * prog;
 
-    // Draw current in-progress stroke
-    if (currentStroke < totalStrokes) {
-      drawCrayonStroke(ctx, currentStroke, strokeProgress, cc);
-    }
+      // Draw multiple sub-lines for crayon texture
+      for (let line = 0; line < 5; line++) {
+        const offsetY = (line - 2) * 4 + (Math.random() - 0.5) * 2;
+        const alpha = 0.15 + Math.random() * 0.15;
+        ctx.beginPath();
+        ctx.moveTo(startX, y + offsetY);
 
-    ctx.restore(); // unclip
-
-    // Fade question mark
-    if (currentStroke >= Math.floor(totalStrokes * 0.35) && !questionFaded) {
-      questionFaded = true;
-      questionEl.style.opacity = '0';
-    }
-
-    if (phase === 'coloring') {
-      // Calculate current stroke and progress
-      const totalProgress = elapsed / totalDuration;
-      currentStroke = Math.floor(totalProgress * totalStrokes);
-      strokeProgress = (totalProgress * totalStrokes) - currentStroke;
-
-      if (currentStroke >= totalStrokes) {
-        currentStroke = totalStrokes - 1;
-        strokeProgress = 1;
-        phase = 'lifting';
-        crayonLiftStart = timestamp;
-      }
-
-      // Draw the crayon itself
-      if (currentStroke < totalStrokes) {
-        drawCrayonShape(ctx, currentStroke, strokeProgress, cc);
-      }
-
-      requestAnimationFrame(drawCrayonFrame);
-
-    } else if (phase === 'lifting') {
-      // Crayon lifts off
-      const liftElapsed = timestamp - crayonLiftStart;
-      const liftDur = 300;
-      const liftProg = Math.min(liftElapsed / liftDur, 1);
-
-      // Draw crayon moving up and fading
-      ctx.globalAlpha = 1 - liftProg;
-      const lastStroke = totalStrokes - 1;
-      const goingRight = lastStroke % 2 === 0;
-      const xBase = goingRight ? (cx + R * 0.85) : (cx - R * 0.85);
-      const yBase = startY + lastStroke * strokeHeight + strokeHeight/2 - liftProg * 40 * dpr;
-      drawCrayonAt(ctx, xBase, yBase, goingRight ? 30 : -30, cc);
-      ctx.globalAlpha = 1;
-
-      if (liftProg >= 1) {
-        phase = 'pause';
-        setTimeout(() => {
-          phase = 'smoothing';
-          smoothStart = performance.now();
-          requestAnimationFrame(drawCrayonFrame);
-        }, 300);
-      } else {
-        requestAnimationFrame(drawCrayonFrame);
-      }
-
-    } else if (phase === 'smoothing') {
-      const smoothElapsed = timestamp - smoothStart;
-      const smoothDur = 800;
-      const smoothProg = Math.min(smoothElapsed / smoothDur, 1);
-
-      // Fade in gradient overlay
-      const gi = round.gradient.inner;
-      const go = round.gradient.outer;
-      gradOverlay.style.background = `radial-gradient(circle, ${gi}, ${go})`;
-      gradOverlay.style.opacity = smoothProg;
-
-      if (smoothProg >= 1) {
-        phase = 'done';
-        // Glow pulse
-        const circle = document.getElementById('mysteryCircle');
-        circle.style.boxShadow = `0 0 50px rgba(212,168,67,0.5), 0 0 100px rgba(212,168,67,0.3)`;
-        circle.style.animation = 'none';
-        setTimeout(() => {
-          circle.style.boxShadow = `0 0 30px rgba(212,168,67,0.3)`;
-        }, 600);
-
-        // Show name
-        objNameEl.style.opacity = '1';
-
-        // Accretion disk for black hole
-        if (round.special === 'accretion') {
-          accDisk.classList.add('visible');
+        // Add wobble points
+        const steps = 8;
+        for (let p = 1; p <= steps; p++) {
+          const frac = p / steps;
+          if (frac > prog) break;
+          const px = startX + (endX - startX) * frac;
+          const py = y + offsetY + (Math.random() - 0.5) * 2;
+          ctx.lineTo(px, py);
         }
 
-        // Show fun fact and next button
-        setTimeout(() => showPostCorrect(roundIndex), 400);
-      } else {
-        requestAnimationFrame(drawCrayonFrame);
-      }
-
-    } else if (phase === 'pause') {
-      // waiting, do nothing
-    }
-  }
-
-  function drawCrayonStroke(tCtx, strokeIdx, progress, color) {
-    const goingRight = strokeIdx % 2 === 0;
-    const y = startY + strokeIdx * strokeHeight + strokeHeight / 2;
-    const lineSpacing = strokeHeight / numLines;
-    const rands = strokeRands[strokeIdx];
-
-    for (let l = 0; l < numLines; l++) {
-      const lineY = y - strokeHeight/2 + l * lineSpacing;
-      const alpha = rands[l].alpha;
-
-      tCtx.beginPath();
-      tCtx.strokeStyle = `rgba(${color.r},${color.g},${color.b},${alpha})`;
-      tCtx.lineWidth = 1.5 * dpr;
-
-      const xS = cx - R * 0.9;
-      const xE = xS + (R * 1.8) * progress;
-      const segments = Math.max(2, Math.floor((xE - xS) / (4 * dpr)));
-      const segLen = (xE - xS) / segments;
-
-      for (let s = 0; s <= segments; s++) {
-        const actualX = xS + s * segLen;
-        const wobble = Math.sin(actualX * 0.03 / dpr + strokeIdx * 1.7 + l * 0.5) * 2 * dpr;
-        const jitter = rands[l].segs[s % rands[l].segs.length] * dpr;
-        if (s === 0) tCtx.moveTo(actualX, lineY + wobble + jitter);
-        else tCtx.lineTo(actualX, lineY + wobble + jitter);
-      }
-      tCtx.stroke();
-    }
-
-    // Overlay pass for more opacity in center
-    if (progress > 0.3) {
-      for (let l = 0; l < 6; l++) {
-        const lineY = y - strokeHeight/4 + l * (strokeHeight/6);
-        tCtx.beginPath();
-        tCtx.strokeStyle = `rgba(${color.r},${color.g},${color.b},0.08)`;
-        tCtx.lineWidth = 2 * dpr;
-        const xS = cx - R * 0.85;
-        const xE = xS + (R * 1.7) * progress;
-        tCtx.moveTo(xS, lineY + Math.sin(xS*0.02/dpr)*dpr);
-        for (let x = xS; x <= xE; x += 5*dpr) {
-          tCtx.lineTo(x, lineY + Math.sin(x*0.025/dpr + strokeIdx)*1.5*dpr);
-        }
-        tCtx.stroke();
+        ctx.strokeStyle = hexToRgba(crayonColor, alpha);
+        ctx.lineWidth = 4 + Math.random() * 2;
+        ctx.lineCap = 'round';
+        ctx.stroke();
       }
     }
+    ctx.restore();
   }
 
-  function drawCrayonShape(ctx, strokeIdx, progress, color) {
-    const goingRight = strokeIdx % 2 === 0;
-    const y = startY + strokeIdx * strokeHeight + strokeHeight / 2;
-    const xRange = R * 1.8;
-    const xStart = cx - R * 0.9;
-
-    let xPos;
-    if (goingRight) {
-      xPos = xStart + xRange * progress;
-    } else {
-      xPos = xStart + xRange * (1 - progress);
-    }
-
-    const angle = goingRight ? 25 : -25;
-    drawCrayonAt(ctx, xPos, y, angle, color);
-  }
-
-  function drawCrayonAt(ctx, x, y, angleDeg, color) {
+  function drawCrayon(x, y, angle) {
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(angleDeg * Math.PI / 180);
-
-    const bodyW = crayonW;
-    const bodyH = crayonH;
-    const tip = tipLen;
+    ctx.rotate(angle);
 
     // Shadow
-    ctx.shadowColor = 'rgba(0,0,0,0.4)';
-    ctx.shadowBlur = 8 * dpr;
-    ctx.shadowOffsetY = 3 * dpr;
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 6;
+    ctx.shadowOffsetX = 2;
+    ctx.shadowOffsetY = 2;
 
-    // Main body
-    const grad = ctx.createLinearGradient(0, -bodyH/2, 0, bodyH/2);
-    const lighter = `rgba(${Math.min(255,color.r+60)},${Math.min(255,color.g+60)},${Math.min(255,color.b+60)},1)`;
-    const base = `rgba(${color.r},${color.g},${color.b},1)`;
-    const darker = `rgba(${Math.max(0,color.r-40)},${Math.max(0,color.g-40)},${Math.max(0,color.b-40)},1)`;
-    grad.addColorStop(0, lighter);
-    grad.addColorStop(0.4, base);
-    grad.addColorStop(1, darker);
-
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.roundRect(-bodyW/2, -bodyH/2, bodyW, bodyH, 3*dpr);
+    // Body
+    const bx = -crayonW / 2;
+    const by = -crayonH / 2;
+    const bodyGrad = ctx.createLinearGradient(bx, by, bx, by + crayonH);
+    bodyGrad.addColorStop(0, lightenColor(crayonColor, 30));
+    bodyGrad.addColorStop(0.5, crayonColor);
+    bodyGrad.addColorStop(1, darkenColor(crayonColor, 20));
+    ctx.fillStyle = bodyGrad;
+    roundRect(ctx, bx + 12, by, crayonW - 12, crayonH, 3);
     ctx.fill();
 
-    // Paper wrapper band
+    // Wrapper band (middle third)
+    const wrapX = bx + 12 + (crayonW - 12) * 0.3;
+    const wrapW = (crayonW - 12) * 0.4;
+    ctx.fillStyle = lightenColor(crayonColor, 50);
+    ctx.globalAlpha = 0.4;
+    ctx.fillRect(wrapX, by + 1, wrapW, crayonH - 2);
+    ctx.globalAlpha = 1.0;
+
+    // Tip (triangle on the left side = drawing end)
     ctx.shadowColor = 'transparent';
-    const bandW = bodyW * 0.35;
-    const bandX = -bodyW/2 + bodyW * 0.3;
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.fillRect(bandX, -bodyH/2, bandW, bodyH);
-    // Band edge lines
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 1 * dpr;
     ctx.beginPath();
-    ctx.moveTo(bandX, -bodyH/2); ctx.lineTo(bandX, bodyH/2);
-    ctx.moveTo(bandX + bandW, -bodyH/2); ctx.lineTo(bandX + bandW, bodyH/2);
-    ctx.stroke();
-
-    // Tip (pointed end on the right side, which is the drawing direction)
-    const tipGrad = ctx.createLinearGradient(bodyW/2, 0, bodyW/2 + tip, 0);
-    tipGrad.addColorStop(0, base);
-    tipGrad.addColorStop(1, darker);
-    ctx.fillStyle = tipGrad;
-    ctx.beginPath();
-    ctx.moveTo(bodyW/2, -bodyH/2);
-    ctx.lineTo(bodyW/2, bodyH/2);
-    ctx.lineTo(bodyW/2 + tip, 0);
+    ctx.moveTo(bx + 12, by);
+    ctx.lineTo(bx, by + crayonH / 2);
+    ctx.lineTo(bx + 12, by + crayonH);
     ctx.closePath();
+    ctx.fillStyle = darkenColor(crayonColor, 40);
     ctx.fill();
-
-    // Tip highlight
-    ctx.fillStyle = 'rgba(255,255,255,0.15)';
-    ctx.beginPath();
-    ctx.moveTo(bodyW/2, -bodyH/2);
-    ctx.lineTo(bodyW/2 + tip, 0);
-    ctx.lineTo(bodyW/2, 0);
-    ctx.closePath();
-    ctx.fill();
-
-    // Top edge highlight on body
-    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-    ctx.lineWidth = 1 * dpr;
-    ctx.beginPath();
-    ctx.moveTo(-bodyW/2 + 3*dpr, -bodyH/2);
-    ctx.lineTo(bodyW/2, -bodyH/2);
-    ctx.stroke();
 
     ctx.restore();
   }
 
-  // Start the animation
-  requestAnimationFrame(drawCrayonFrame);
+  function animate() {
+    if (currentStroke >= numStrokes) {
+      // Done coloring
+      ctx.restore();
+      finishColoring(round);
+      return;
+    }
+
+    strokeProgress += strokeSpeed;
+    if (strokeProgress > 1) {
+      strokeProgress = 0;
+      currentStroke++;
+      if (currentStroke >= numStrokes) {
+        drawCrayonStrokes(numStrokes - 1, 1);
+        finishColoring(round);
+        return;
+      }
+    }
+
+    // Fade the question mark as we progress
+    const totalProgress = (currentStroke + strokeProgress) / numStrokes;
+    questionMark.style.opacity = Math.max(0, 1 - totalProgress * 1.3);
+
+    drawCrayonStrokes(currentStroke, strokeProgress);
+
+    // Draw crayon
+    const crayX = getStrokeX(strokeProgress, currentStroke);
+    const crayY = getStrokeY(currentStroke);
+    const angle = currentStroke % 2 === 0 ? -0.5 : 0.5;
+    drawCrayon(crayX, crayY, angle);
+
+    requestAnimationFrame(animate);
+  }
+
+  // Small delay then start
+  setTimeout(() => requestAnimationFrame(animate), 300);
 }
 
-function showPostCorrect(roundIndex) {
-  const round = rounds[roundIndex];
-  const fb = document.getElementById('feedbackArea');
-  fb.innerHTML = '';
+function finishColoring(round) {
+  const sz = getCircleSize();
+  const radius = sz / 2 - 2;
+  const cx = sz / 2;
 
-  const factCloud = document.createElement('div');
-  factCloud.className = 'fun-fact-cloud';
-  factCloud.innerHTML = `<div class="fact-label">Dato curioso</div><div class="fact-text">${round.funFact}</div>`;
-  fb.appendChild(factCloud);
+  // Draw smooth gradient on smooth canvas
+  smoothCtx.save();
+  smoothCtx.beginPath();
+  smoothCtx.arc(cx, cx, radius, 0, Math.PI * 2);
+  smoothCtx.clip();
 
-  requestAnimationFrame(() => requestAnimationFrame(() => factCloud.classList.add('visible')));
+  const grad = smoothCtx.createRadialGradient(cx * 0.8, cx * 0.7, 0, cx, cx, radius);
+  grad.addColorStop(0, round.fill[0]);
+  grad.addColorStop(1, round.fill[1]);
+  smoothCtx.fillStyle = grad;
+  smoothCtx.fillRect(0, 0, sz, sz);
+  smoothCtx.restore();
 
-  const nextBtn = document.createElement('button');
-  nextBtn.className = 'next-btn';
-  nextBtn.textContent = roundIndex < 4 ? 'Siguiente \u203a' : '\u00a1Ver Resultados!';
-  nextBtn.addEventListener('click', () => {
-    animating = false;
-    transitionToNext(roundIndex);
+  // Transition: smooth canvas fades in over crayon texture
+  smoothCanvas.style.opacity = '1';
+
+  // Glow pulse on circle
+  mysteryCircle.style.animation = 'none';
+  mysteryCircle.style.borderColor = 'transparent';
+  mysteryCircle.style.boxShadow = `0 0 40px ${round.fill[0]}55, 0 0 80px ${round.fill[1]}33`;
+
+  // Crayon lifts off (clear crayon canvas after a moment to remove the crayon sprite)
+  setTimeout(() => {
+    // Redraw strokes without crayon
+    crayonCtx.clearRect(0, 0, sz, sz);
+  }, 200);
+
+  // Show object name
+  setTimeout(() => {
+    objectNameEl.textContent = round.name;
+    objectNameEl.classList.add('visible');
+  }, 500);
+
+  // Show fun fact
+  setTimeout(() => {
+    funFactEl.textContent = round.fact;
+    funFactEl.classList.add('visible');
+  }, 900);
+
+  // Show next button
+  setTimeout(() => {
+    nextBtn.classList.add('visible');
+  }, 1200);
+}
+
+// ========== NEXT ROUND ==========
+function nextRound() {
+  if (currentRound >= rounds.length - 1) {
+    showEndScreen();
+    return;
+  }
+
+  // Transition out
+  const sz = getCircleSize();
+  mysteryCircle.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+  mysteryCircle.style.transform = 'scale(0.3)';
+  mysteryCircle.style.opacity = '0';
+  smoothCanvas.style.transition = 'opacity 0.3s ease';
+  smoothCanvas.style.opacity = '0';
+  crayonCanvas.style.transition = 'opacity 0.3s ease';
+  crayonCanvas.style.opacity = '0';
+
+  // Data clouds drift off
+  document.querySelectorAll('.data-cloud').forEach((cloud, i) => {
+    cloud.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+    cloud.style.opacity = '0';
+    cloud.style.transform = cloud.classList.contains('from-right') ? 'translateX(60px)' : 'translateX(-60px)';
   });
-  fb.appendChild(nextBtn);
-}
 
-function transitionToNext(roundIndex) {
-  // Shrink circle, drift clouds away
-  const circleWrap = document.getElementById('circleWrap');
-  const clouds = document.querySelectorAll('.data-cloud');
-
-  clouds.forEach(c => c.classList.add('drift-away'));
-  circleWrap.classList.add('shrinking');
-
-  // Hide options and feedback
-  const opts = document.getElementById('optionsContainer');
-  opts.style.transition = 'opacity 0.4s';
-  opts.style.opacity = '0';
-
-  const fb = document.getElementById('feedbackArea');
-  fb.style.transition = 'opacity 0.4s';
-  fb.style.opacity = '0';
+  objectNameEl.classList.remove('visible');
+  funFactEl.classList.remove('visible');
+  nextBtn.classList.remove('visible');
+  optionsGrid.classList.remove('visible');
 
   setTimeout(() => {
     currentRound++;
-    renderProgress();
-    if (currentRound < 5) {
-      renderRound(currentRound);
-    } else {
-      showEndScreen();
-    }
+    // Reset circle appearance
+    mysteryCircle.style.transition = 'none';
+    mysteryCircle.style.transform = 'scale(0.3)';
+    mysteryCircle.style.opacity = '0';
+    mysteryCircle.style.boxShadow = 'none';
+    crayonCanvas.style.transition = 'none';
+    crayonCanvas.style.opacity = '1';
+    smoothCanvas.style.transition = 'none';
+    smoothCanvas.style.opacity = '0';
+
+    startRound();
+
+    // Animate circle in
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        mysteryCircle.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+        mysteryCircle.style.transform = 'scale(1)';
+        mysteryCircle.style.opacity = '1';
+      });
+    });
   }, 800);
 }
 
+// ========== END SCREEN ==========
 function showEndScreen() {
-  document.getElementById('gameArea').style.display = 'none';
-  document.getElementById('roundLabel').textContent = '';
-  renderProgress();
+  gameArea.style.display = 'none';
+  document.querySelector('.progress-dots').style.display = 'none';
+  endScreen.classList.add('active');
+  document.getElementById('endScore').textContent = `Descubriste ${score} de 5 objetos al primer intento`;
 
-  const end = document.getElementById('endScreen');
-  end.style.display = 'block';
+  let msg;
+  if (score === 5) msg = '¡Perfecto! Eres un verdadero astrofisico. ¡Impresionante dominio del cosmos!';
+  else if (score >= 4) msg = '¡Excelente! Casi perfecto. ¡Tienes un gran conocimiento del universo!';
+  else if (score >= 3) msg = '¡Muy bien! Conoces bastante sobre los objetos estelares.';
+  else if (score >= 2) msg = '¡Buen intento! Sigue explorando el universo y aprenderas mas.';
+  else msg = '¡No te rindas! El universo es inmenso y hay mucho por descubrir.';
 
-  let message = '';
-  if (score === 5) message = '\u00a1Eres un aut\u00e9ntico astrof\u00edsico! Perfecto.';
-  else if (score >= 3) message = '\u00a1Muy bien! Sabes mucho sobre el universo.';
-  else message = '\u00a1Buen intento! Sigue explorando el cosmos.';
-
-  end.innerHTML = `
-    <div class="end-title">\u00a1Misi\u00f3n Completada!</div>
-    <div class="end-score">Descubriste <span>${score}</span> de <span>5</span> objetos al primer intento</div>
-    <div class="end-message">${message}</div>
-    <a href="index.html" class="end-btn">Volver al inicio</a>
-  `;
-
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    end.classList.add('visible');
-    spawnFireworks();
-    setTimeout(spawnFireworks, 2000);
-    setTimeout(spawnFireworks, 4000);
-  }));
+  document.getElementById('endMessage').textContent = msg;
+  startCelebration();
 }
 
-// === START ===
-renderProgress();
-renderRound(0);
+// ========== CELEBRATION PARTICLES ==========
+function startCelebration() {
+  const canvas = document.getElementById('celebrationCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const particles = [];
+  const colors = ['#d4a843', '#f0c860', '#7B2FF2', '#e74c3c', '#2ecc71', '#ffffff', '#00B4D8'];
+
+  function burst(x, y) {
+    for (let i = 0; i < 40; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 6 + 2;
+      particles.push({
+        x, y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 2,
+        r: Math.random() * 3 + 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        alpha: 1,
+        decay: Math.random() * 0.015 + 0.008,
+        gravity: 0.06
+      });
+    }
+  }
+
+  // Multiple bursts
+  for (let i = 0; i < 5; i++) {
+    setTimeout(() => {
+      burst(
+        Math.random() * canvas.width * 0.6 + canvas.width * 0.2,
+        Math.random() * canvas.height * 0.4 + canvas.height * 0.1
+      );
+    }, i * 400);
+  }
+
+  function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += p.gravity;
+      p.alpha -= p.decay;
+      if (p.alpha <= 0) { particles.splice(i, 1); continue; }
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = p.alpha;
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if (particles.length > 0) requestAnimationFrame(animateParticles);
+  }
+  requestAnimationFrame(animateParticles);
+}
+
+// ========== UTILITY FUNCTIONS ==========
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1,3), 16);
+  const g = parseInt(hex.slice(3,5), 16);
+  const b = parseInt(hex.slice(5,7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
+function lightenColor(hex, amount) {
+  let r = parseInt(hex.slice(1,3), 16);
+  let g = parseInt(hex.slice(3,5), 16);
+  let b = parseInt(hex.slice(5,7), 16);
+  r = Math.min(255, r + amount);
+  g = Math.min(255, g + amount);
+  b = Math.min(255, b + amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+function darkenColor(hex, amount) {
+  let r = parseInt(hex.slice(1,3), 16);
+  let g = parseInt(hex.slice(3,5), 16);
+  let b = parseInt(hex.slice(5,7), 16);
+  r = Math.max(0, r - amount);
+  g = Math.max(0, g - amount);
+  b = Math.max(0, b - amount);
+  return `rgb(${r},${g},${b})`;
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+// ========== INIT ==========
+startRound();
 </script>
 </body>
 </html>
