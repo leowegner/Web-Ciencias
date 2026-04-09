@@ -192,16 +192,30 @@ body::after {
   box-shadow: 0 4px 20px rgba(46,204,113,0.1);
   padding: 16px 20px;
 }
-.data-cloud.visible {
-  animation: cloudFloat 3.5s ease-in-out infinite;
-}
-.data-cloud:nth-child(1).visible { animation-delay: 0s; }
-.data-cloud:nth-child(2).visible { animation-delay: 0.7s; }
-.data-cloud:nth-child(3).visible { animation-delay: 1.4s; }
+/* Animation handled by spiral-in-left / spiral-in-right classes */
 
 @keyframes cloudFloat {
-  0%, 100% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
+  0%, 100% { transform: translateY(0px) rotate(-1deg); }
+  33% { transform: translateY(-8px) rotate(1deg); }
+  66% { transform: translateY(-3px) rotate(-0.5deg); }
+}
+
+/* Data cloud entrance spiral */
+@keyframes cloudSpiralLeft {
+  0% { opacity: 0; transform: translate(-80px, -40px) rotate(-15deg) scale(0.5); }
+  60% { opacity: 0.8; transform: translate(10px, 5px) rotate(3deg) scale(1.05); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+@keyframes cloudSpiralRight {
+  0% { opacity: 0; transform: translate(80px, -40px) rotate(15deg) scale(0.5); }
+  60% { opacity: 0.8; transform: translate(-10px, 5px) rotate(-3deg) scale(1.05); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+}
+.data-cloud.spiral-in-left {
+  animation: cloudSpiralLeft 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, cloudFloat 3.5s ease-in-out 0.8s infinite;
+}
+.data-cloud.spiral-in-right {
+  animation: cloudSpiralRight 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, cloudFloat 3.5s ease-in-out 0.8s infinite;
 }
 
 .data-label {
@@ -261,8 +275,50 @@ body::after {
 }
 
 @keyframes circlePulse {
-  0%, 100% { transform: scale(1.0); }
-  50% { transform: scale(1.02); }
+  0%, 100% { transform: translate(0, 0) rotate(0deg) scale(1.0); }
+  25% { transform: translate(8px, -12px) rotate(2deg) scale(1.03); }
+  50% { transform: translate(-5px, -18px) rotate(-1deg) scale(1.05); }
+  75% { transform: translate(-10px, -6px) rotate(1.5deg) scale(1.02); }
+}
+
+/* Orbiting particles canvas */
+#orbitCanvas {
+  position: absolute;
+  top: -40px;
+  left: -40px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Nebula canvas inside circle */
+#nebulaCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: clamp(240px, 28vw, 480px);
+  height: clamp(240px, 28vw, 480px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Gravitational wave rings */
+.grav-wave {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(212,168,67,0.6);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+  animation: gravWaveExpand 1.2s ease-out forwards;
+}
+@keyframes gravWaveExpand {
+  0% { width: 50px; height: 50px; opacity: 0.8; border-width: 3px; }
+  100% { width: 600px; height: 600px; opacity: 0; border-width: 1px; }
 }
 
 /* Crayon canvas overlay */
@@ -498,7 +554,7 @@ body::after {
   .data-cloud { padding: 10px 14px; }
   .mystery-circle-wrapper { order: -1; }
   .title { font-size: 30px; }
-  .mystery-circle-wrapper, .mystery-circle, #crayonCanvas, #crayonSmoothCanvas {
+  .mystery-circle-wrapper, .mystery-circle, #crayonCanvas, #crayonSmoothCanvas, #nebulaCanvas {
     width: 220px;
     height: 220px;
   }
@@ -534,6 +590,8 @@ body::after {
       <div class="data-column" id="dataLeft"></div>
 
       <div class="mystery-circle-wrapper">
+        <canvas id="orbitCanvas"></canvas>
+        <canvas id="nebulaCanvas"></canvas>
         <div class="mystery-circle" id="mysteryCircle">
           <span class="question-mark" id="questionMark">?</span>
         </div>
@@ -605,6 +663,253 @@ body::after {
   }
   drawStars();
 })();
+
+// ========== ORBITING PARTICLES ==========
+const orbitCanvas = document.getElementById('orbitCanvas');
+const orbitCtx = orbitCanvas.getContext('2d');
+let orbitParticles = [];
+let orbitAnimId = null;
+
+function initOrbitCanvas() {
+  const wrapper = document.querySelector('.mystery-circle-wrapper');
+  const sz = wrapper ? wrapper.offsetWidth : 280;
+  orbitCanvas.width = sz + 80;
+  orbitCanvas.height = sz + 80;
+  orbitCanvas.style.width = (sz + 80) + 'px';
+  orbitCanvas.style.height = (sz + 80) + 'px';
+}
+
+function spawnOrbitParticles() {
+  orbitParticles = [];
+  const count = 35;
+  for (let i = 0; i < count; i++) {
+    const angle = (Math.PI * 2 / count) * i + Math.random() * 0.3;
+    const dist = 0.42 + Math.random() * 0.15;
+    orbitParticles.push({
+      angle,
+      dist,
+      speed: (0.004 + Math.random() * 0.008) * (Math.random() > 0.5 ? 1 : -1),
+      r: Math.random() * 2.5 + 0.8,
+      alpha: Math.random() * 0.6 + 0.3,
+      color: Math.random() > 0.6 ? '#d4a843' : (Math.random() > 0.5 ? '#7B2FF2' : '#ffffff'),
+      twinkle: Math.random() * 0.02 + 0.005,
+      twinkleDir: 1,
+      trail: []
+    });
+  }
+}
+
+function animateOrbit() {
+  const w = orbitCanvas.width;
+  const h = orbitCanvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+
+  orbitCtx.clearRect(0, 0, w, h);
+
+  for (const p of orbitParticles) {
+    p.angle += p.speed;
+    p.alpha += p.twinkle * p.twinkleDir;
+    if (p.alpha > 0.9) { p.alpha = 0.9; p.twinkleDir = -1; }
+    if (p.alpha < 0.15) { p.alpha = 0.15; p.twinkleDir = 1; }
+
+    const rx = cx * p.dist;
+    const ry = cy * p.dist * 0.85;
+    const x = cx + Math.cos(p.angle) * rx;
+    const y = cy + Math.sin(p.angle) * ry;
+
+    // Trail
+    p.trail.push({ x, y, alpha: p.alpha * 0.5 });
+    if (p.trail.length > 6) p.trail.shift();
+
+    for (let t = 0; t < p.trail.length; t++) {
+      const tr = p.trail[t];
+      const trAlpha = tr.alpha * (t / p.trail.length) * 0.4;
+      orbitCtx.beginPath();
+      orbitCtx.arc(tr.x, tr.y, p.r * 0.6, 0, Math.PI * 2);
+      orbitCtx.fillStyle = p.color.replace(')', `,${trAlpha})`).replace('rgb', 'rgba').replace('#', '');
+      // Use hex to rgba for simplicity
+      const rgb = hexToRgbValues(p.color);
+      orbitCtx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${trAlpha})`;
+      orbitCtx.fill();
+    }
+
+    // Main particle with glow
+    orbitCtx.save();
+    orbitCtx.shadowColor = p.color;
+    orbitCtx.shadowBlur = 8;
+    orbitCtx.beginPath();
+    orbitCtx.arc(x, y, p.r, 0, Math.PI * 2);
+    const rgb2 = hexToRgbValues(p.color);
+    orbitCtx.fillStyle = `rgba(${rgb2.r},${rgb2.g},${rgb2.b},${p.alpha})`;
+    orbitCtx.fill();
+    orbitCtx.restore();
+  }
+
+  orbitAnimId = requestAnimationFrame(animateOrbit);
+}
+
+function hexToRgbValues(hex) {
+  if (hex.startsWith('#')) {
+    return {
+      r: parseInt(hex.slice(1,3), 16),
+      g: parseInt(hex.slice(3,5), 16),
+      b: parseInt(hex.slice(5,7), 16)
+    };
+  }
+  return { r: 255, g: 255, b: 255 };
+}
+
+// ========== NEBULA SWIRL ==========
+const nebulaCanvas = document.getElementById('nebulaCanvas');
+const nebulaCtx = nebulaCanvas.getContext('2d');
+let nebulaTime = 0;
+let nebulaAnimId = null;
+let nebulaActive = true;
+
+function initNebulaCanvas() {
+  const wrapper = document.querySelector('.mystery-circle-wrapper');
+  const sz = wrapper ? wrapper.offsetWidth : 280;
+  nebulaCanvas.width = sz;
+  nebulaCanvas.height = sz;
+}
+
+function animateNebula() {
+  if (!nebulaActive) { nebulaAnimId = requestAnimationFrame(animateNebula); return; }
+  const sz = nebulaCanvas.width;
+  const cx = sz / 2;
+  const cy = sz / 2;
+  const radius = sz / 2 - 2;
+  nebulaTime += 0.008;
+
+  nebulaCtx.clearRect(0, 0, sz, sz);
+  nebulaCtx.save();
+  nebulaCtx.beginPath();
+  nebulaCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+  nebulaCtx.clip();
+
+  // Draw swirling nebula arms
+  const arms = 3;
+  for (let a = 0; a < arms; a++) {
+    const baseAngle = (Math.PI * 2 / arms) * a + nebulaTime;
+    for (let i = 0; i < 12; i++) {
+      const t = i / 12;
+      const spiralAngle = baseAngle + t * Math.PI * 1.5;
+      const dist = t * radius * 0.85;
+      const x = cx + Math.cos(spiralAngle) * dist;
+      const y = cy + Math.sin(spiralAngle) * dist;
+      const size = (1 - t) * radius * 0.4 + 10;
+
+      const grad = nebulaCtx.createRadialGradient(x, y, 0, x, y, size);
+      const hue = (a * 120 + i * 10 + nebulaTime * 30) % 360;
+      grad.addColorStop(0, `hsla(${hue}, 70%, 50%, 0.06)`);
+      grad.addColorStop(0.5, `hsla(${hue + 30}, 60%, 40%, 0.03)`);
+      grad.addColorStop(1, 'transparent');
+
+      nebulaCtx.fillStyle = grad;
+      nebulaCtx.beginPath();
+      nebulaCtx.arc(x, y, size, 0, Math.PI * 2);
+      nebulaCtx.fill();
+    }
+  }
+
+  // Central glow
+  const centerGrad = nebulaCtx.createRadialGradient(cx, cy, 0, cx, cy, radius * 0.4);
+  const pulse = Math.sin(nebulaTime * 2) * 0.03 + 0.07;
+  centerGrad.addColorStop(0, `rgba(212, 168, 67, ${pulse})`);
+  centerGrad.addColorStop(1, 'transparent');
+  nebulaCtx.fillStyle = centerGrad;
+  nebulaCtx.fillRect(0, 0, sz, sz);
+
+  nebulaCtx.restore();
+  nebulaAnimId = requestAnimationFrame(animateNebula);
+}
+
+// ========== GRAVITATIONAL WAVE BURST ==========
+function emitGravWaves() {
+  const wrapper = document.querySelector('.mystery-circle-wrapper');
+  for (let i = 0; i < 4; i++) {
+    setTimeout(() => {
+      const wave = document.createElement('div');
+      wave.className = 'grav-wave';
+      wrapper.appendChild(wave);
+      wave.addEventListener('animationend', () => wave.remove());
+    }, i * 250);
+  }
+}
+
+// ========== EXPLOSION / REFORM TRANSITION ==========
+let transitionParticles = [];
+let transitionAnimId = null;
+
+function explodeCircle(callback) {
+  const wrapper = document.querySelector('.mystery-circle-wrapper');
+  const sz = wrapper.offsetWidth;
+  const cx = sz / 2;
+  const cy = sz / 2;
+
+  // Create temp canvas for explosion
+  const expCanvas = document.createElement('canvas');
+  expCanvas.width = sz + 100;
+  expCanvas.height = sz + 100;
+  expCanvas.style.cssText = `position:absolute;top:-50px;left:-50px;width:${sz+100}px;height:${sz+100}px;pointer-events:none;z-index:10;`;
+  wrapper.appendChild(expCanvas);
+  const ectx = expCanvas.getContext('2d');
+
+  transitionParticles = [];
+  const ecx = expCanvas.width / 2;
+  const ecy = expCanvas.height / 2;
+
+  for (let i = 0; i < 60; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 4 + 2;
+    const startDist = Math.random() * 20;
+    transitionParticles.push({
+      x: ecx + Math.cos(angle) * startDist,
+      y: ecy + Math.sin(angle) * startDist,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      r: Math.random() * 4 + 1,
+      alpha: 1,
+      decay: Math.random() * 0.02 + 0.015,
+      color: Math.random() > 0.5 ? '#d4a843' : '#7B2FF2'
+    });
+  }
+
+  function animateExplosion() {
+    ectx.clearRect(0, 0, expCanvas.width, expCanvas.height);
+    let alive = false;
+    for (const p of transitionParticles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vx *= 0.97;
+      p.vy *= 0.97;
+      p.alpha -= p.decay;
+      if (p.alpha <= 0) continue;
+      alive = true;
+      const rgb = hexToRgbValues(p.color);
+      ectx.beginPath();
+      ectx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ectx.fillStyle = `rgba(${rgb.r},${rgb.g},${rgb.b},${p.alpha})`;
+      ectx.fill();
+    }
+    if (alive) {
+      requestAnimationFrame(animateExplosion);
+    } else {
+      expCanvas.remove();
+      if (callback) callback();
+    }
+  }
+  requestAnimationFrame(animateExplosion);
+}
+
+// Init orbit and nebula
+initOrbitCanvas();
+initNebulaCanvas();
+spawnOrbitParticles();
+animateOrbit();
+animateNebula();
+window.addEventListener('resize', () => { initOrbitCanvas(); initNebulaCanvas(); });
 
 // ========== GAME DATA ==========
 const rounds = [
@@ -746,6 +1051,10 @@ function startRound() {
   crayonCtx.clearRect(0, 0, sz, sz);
   smoothCtx.clearRect(0, 0, sz, sz);
 
+  // Re-enable nebula swirl
+  nebulaActive = true;
+  nebulaCanvas.style.opacity = '1';
+
   // Update progress dots
   progressDots.forEach((dot, i) => {
     dot.classList.remove('active');
@@ -759,13 +1068,19 @@ function startRound() {
   leftData.forEach((d, i) => {
     const cloud = createCloud(d, false);
     dataLeft.appendChild(cloud);
-    setTimeout(() => cloud.classList.add('visible'), 400 + i * 600);
+    setTimeout(() => {
+      cloud.classList.add('visible');
+      cloud.classList.add('spiral-in-left');
+    }, 400 + i * 500);
   });
 
   rightData.forEach((d, i) => {
     const cloud = createCloud(d, true);
     dataRight.appendChild(cloud);
-    setTimeout(() => cloud.classList.add('visible'), 400 + (i + 3) * 600);
+    setTimeout(() => {
+      cloud.classList.add('visible');
+      cloud.classList.add('spiral-in-right');
+    }, 400 + (i + 3) * 500);
   });
 
   // Create options after all clouds appear
@@ -805,6 +1120,11 @@ function handleAnswer(index, btn) {
     // Disable all buttons
     document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
     wrongFeedback.classList.remove('visible');
+    // Emit gravitational waves and hide nebula
+    emitGravWaves();
+    nebulaActive = false;
+    nebulaCanvas.style.transition = 'opacity 0.8s ease';
+    nebulaCanvas.style.opacity = '0';
     // Start crayon animation
     startCrayonAnimation(round);
   } else {
@@ -1046,21 +1366,26 @@ function nextRound() {
     return;
   }
 
-  // Transition out
+  // Explosion effect then transition out
+  explodeCircle();
+
   const sz = getCircleSize();
-  mysteryCircle.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
-  mysteryCircle.style.transform = 'scale(0.3)';
+  mysteryCircle.style.transition = 'transform 0.6s cubic-bezier(0.55, 0, 1, 0.45), opacity 0.4s ease';
+  mysteryCircle.style.transform = 'scale(0.1) rotate(180deg)';
   mysteryCircle.style.opacity = '0';
   smoothCanvas.style.transition = 'opacity 0.3s ease';
   smoothCanvas.style.opacity = '0';
   crayonCanvas.style.transition = 'opacity 0.3s ease';
   crayonCanvas.style.opacity = '0';
+  nebulaCanvas.style.transition = 'opacity 0.3s ease';
+  nebulaCanvas.style.opacity = '0';
 
-  // Data clouds drift off
+  // Data clouds scatter outward
   document.querySelectorAll('.data-cloud').forEach((cloud, i) => {
-    cloud.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
+    const angle = -30 + i * 25;
+    cloud.style.transition = 'transform 0.6s cubic-bezier(0.55, 0, 1, 0.45), opacity 0.4s ease';
     cloud.style.opacity = '0';
-    cloud.style.transform = cloud.classList.contains('from-right') ? 'translateX(60px)' : 'translateX(-60px)';
+    cloud.style.transform = `translate(${cloud.classList.contains('from-right') ? 100 : -100}px, ${angle}px) rotate(${angle}deg) scale(0.3)`;
   });
 
   objectNameEl.classList.remove('visible');
@@ -1072,25 +1397,30 @@ function nextRound() {
     currentRound++;
     // Reset circle appearance
     mysteryCircle.style.transition = 'none';
-    mysteryCircle.style.transform = 'scale(0.3)';
+    mysteryCircle.style.transform = 'scale(0.1) rotate(-180deg)';
     mysteryCircle.style.opacity = '0';
     mysteryCircle.style.boxShadow = 'none';
     crayonCanvas.style.transition = 'none';
     crayonCanvas.style.opacity = '1';
     smoothCanvas.style.transition = 'none';
     smoothCanvas.style.opacity = '0';
+    nebulaCanvas.style.transition = 'none';
+    nebulaCanvas.style.opacity = '1';
+
+    // Respawn orbit particles for fresh feel
+    spawnOrbitParticles();
 
     startRound();
 
-    // Animate circle in
+    // Animate circle in with spring effect
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        mysteryCircle.style.transition = 'transform 0.5s ease, opacity 0.5s ease';
-        mysteryCircle.style.transform = 'scale(1)';
+        mysteryCircle.style.transition = 'transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.5s ease';
+        mysteryCircle.style.transform = 'scale(1) rotate(0deg)';
         mysteryCircle.style.opacity = '1';
       });
     });
-  }, 800);
+  }, 900);
 }
 
 // ========== END SCREEN ==========
