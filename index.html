@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Explora el universo a través de la física con experiencias interactivas: simuladores de gravedad, calculadoras planetarias y laboratorios de astrofísica.">
+    <meta name="theme-color" content="#0a0e27">
     <title>Astrofísica Interactiva</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after {
@@ -208,6 +211,8 @@
             border-radius: 16px;
             padding: 3vh 3vw;
             height: 100%;
+            display: flex;
+            flex-direction: column;
             transition: transform 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
             box-shadow: 0 0 15px rgba(123, 47, 242, 0.08);
             animation: borderPulse 5s ease-in-out infinite;
@@ -252,6 +257,80 @@
             color: rgba(255, 255, 255, 0.7);
             font-weight: 300;
         }
+
+        .card-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: auto;
+            padding-top: 2vh;
+            font-size: 0.85rem;
+            color: rgba(212, 168, 67, 0.6);
+            font-weight: 500;
+            transition: color 0.3s, gap 0.3s;
+        }
+
+        .card:hover .card-cta {
+            color: #d4a843;
+            gap: 10px;
+        }
+
+        .card-cta .arrow {
+            transition: transform 0.3s;
+        }
+
+        .card:hover .card-cta .arrow {
+            transform: translateX(4px);
+        }
+
+        /* Focus styles for accessibility */
+        .card-link:focus-visible .card {
+            outline: 2px solid #d4a843;
+            outline-offset: 3px;
+            border-color: rgba(212, 168, 67, 0.6);
+        }
+
+        /* Decorative separator */
+        .separator {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 2vh auto 3vh;
+            max-width: 300px;
+            opacity: 0;
+            animation: fadeSlideUp 0.8s ease-out 1.2s forwards;
+        }
+
+        .separator::before, .separator::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(212, 168, 67, 0.4), transparent);
+        }
+
+        .separator .star {
+            color: rgba(212, 168, 67, 0.5);
+            font-size: 0.7rem;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 3vh 2vw 2vh;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8rem;
+            letter-spacing: 0.5px;
+        }
+
+        footer a {
+            color: rgba(212, 168, 67, 0.5);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: #d4a843;
+        }
     </style>
 </head>
 <body>
@@ -261,39 +340,48 @@
         <h1 class="main-title" id="mainTitle">ASTROFÍSICA INTERACTIVA</h1>
         <p class="subtitle">Explora el universo a través de la física</p>
         <p class="intro">
-            La astrofísica es la ciencia que usa las leyes de la física para entender el universo: las estrellas, los planetas, las galaxias y todo lo que existe en el cosmos. Aquí podrás explorar sus secretos a través de 4 experiencias interactivas diseñadas para que descubras cómo funciona el espacio de forma divertida.
+            Usa las leyes de la física para entender las estrellas, los planetas y las galaxias. Explora el cosmos a través de 4 experiencias interactivas.
         </p>
+        <div class="separator"><span class="star">✦</span></div>
 
         <div class="card-grid">
-            <a href="peso-planetas.html" class="card-link visible">
+            <a href="peso-planetas.html" class="card-link visible" aria-label="Calculadora de peso en planetas">
                 <div class="card">
-                    <span class="card-icon">⚖️</span>
+                    <span class="card-icon" aria-hidden="true">⚖️</span>
                     <h2 class="card-title">¿Cuánto Pesas en...?</h2>
-                    <p class="card-desc">Descubre cuánto pesarías en la Luna, Marte, Júpiter y más. ¡La gravedad cambia tu peso pero no tu masa! Ingresa tu peso y compara entre 8 mundos distintos del sistema solar.</p>
+                    <p class="card-desc">Descubre cuánto pesarías en la Luna, Marte, Júpiter y más. Ingresa tu peso y compara entre 8 mundos del sistema solar.</p>
+                    <span class="card-cta">Explorar <span class="arrow" aria-hidden="true">→</span></span>
                 </div>
             </a>
-            <a href="laboratorio.html" class="card-link visible">
+            <a href="laboratorio.html" class="card-link visible" aria-label="Laboratorio de astrofísica interactivo">
                 <div class="card">
-                    <span class="card-icon">🔬</span>
+                    <span class="card-icon" aria-hidden="true">🔬</span>
                     <h2 class="card-title">El Laboratorio del Astrofísico</h2>
-                    <p class="card-desc">Usa las herramientas reales de un astrofísico: analiza espectros de luz para identificar elementos, detecta exoplanetas mediante curvas de tránsito y simula órbitas gravitacionales.</p>
+                    <p class="card-desc">Analiza espectros de luz, detecta exoplanetas mediante curvas de tránsito y simula órbitas gravitacionales.</p>
+                    <span class="card-cta">Explorar <span class="arrow" aria-hidden="true">→</span></span>
                 </div>
             </a>
-            <a href="analiza-descubre.html" class="card-link visible">
+            <a href="analiza-descubre.html" class="card-link visible" aria-label="Juego de análisis de datos cósmicos">
                 <div class="card">
-                    <span class="card-icon">🌟</span>
+                    <span class="card-icon" aria-hidden="true">🌟</span>
                     <h2 class="card-title">Analiza y Descubre</h2>
-                    <p class="card-desc">Analiza datos reales de temperatura, masa, radio y luminosidad para identificar objetos cósmicos misteriosos. ¿Es una enana blanca, una nebulosa o un agujero negro?</p>
+                    <p class="card-desc">Analiza datos de temperatura, masa, radio y luminosidad para identificar objetos cósmicos misteriosos.</p>
+                    <span class="card-cta">Explorar <span class="arrow" aria-hidden="true">→</span></span>
                 </div>
             </a>
-            <a href="gravedad.html" class="card-link visible">
+            <a href="gravedad.html" class="card-link visible" aria-label="Simulador de gravedad y órbitas">
                 <div class="card">
-                    <span class="card-icon">🪐</span>
+                    <span class="card-icon" aria-hidden="true">🪐</span>
                     <h2 class="card-title">Gravedad en Acción</h2>
-                    <p class="card-desc">Coloca estrellas, planetas y agujeros negros en el espacio y observa órbitas elípticas en tiempo real. Aprende las Leyes de Kepler mientras experimentas con sistemas binarios y el caos gravitacional.</p>
+                    <p class="card-desc">Coloca estrellas, planetas y agujeros negros en el espacio y observa órbitas elípticas en tiempo real.</p>
+                    <span class="card-cta">Explorar <span class="arrow" aria-hidden="true">→</span></span>
                 </div>
             </a>
         </div>
+
+        <footer>
+            Astrofísica Interactiva — Proyecto educativo de ciencias
+        </footer>
     </div>
 
     <script>

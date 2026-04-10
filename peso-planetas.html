@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Calculadora interactiva: descubre cuánto pesarías en la Luna, Marte, Júpiter y otros planetas del sistema solar.">
+<meta name="theme-color" content="#0a0e27">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
 <title>¿Cuánto Pesas en...? — Astrofísica</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -106,7 +109,7 @@ canvas#starfield {
 }
 h1 {
   font-family: 'Cinzel', serif;
-  font-size: 3rem;
+  font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 900;
   color: #d4a843;
   text-shadow: 0 0 30px rgba(212, 168, 67, 0.5), 0 0 60px rgba(212, 168, 67, 0.2);
@@ -554,6 +557,15 @@ h1 {
   letter-spacing: 1px;
 }
 
+/* Focus styles */
+:focus-visible {
+  outline: 2px solid #d4a843;
+  outline-offset: 3px;
+}
+button:focus-visible, .calc-btn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(212, 168, 67, 0.4);
+}
+
 /* Responsive */
 @media (min-width: 1200px) {
   .tube-outer { width: 70px; height: 350px; border-radius: 35px; }
@@ -567,7 +579,6 @@ h1 {
   .tube-name { font-size: 0.65rem; }
 }
 @media (max-width: 600px) {
-  h1 { font-size: 2rem; }
   .input-row { flex-direction: column; }
   .input-section { padding: 24px 20px; }
   .back-btn { top: 12px; left: 12px; padding: 8px 14px; font-size: 0.75rem; }
@@ -586,8 +597,8 @@ h1 {
 <canvas id="starfield"></canvas>
 <div id="glowBurst"></div>
 
-<a href="index.html" class="back-btn">
-  <span class="arrow">&larr;</span> Inicio
+<a href="index.html" class="back-btn" aria-label="Volver al inicio">
+  <span class="arrow">&larr;</span> Volver
 </a>
 
 <div class="container" id="mainContainer">

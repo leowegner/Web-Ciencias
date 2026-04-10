@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Juego educativo: analiza datos astrofísicos para identificar enanas blancas, nebulosas, agujeros negros y otros objetos cósmicos.">
+<meta name="theme-color" content="#0a0e27">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔭</text></svg>">
 <title>Analiza y Descubre</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -535,6 +538,10 @@ body::after {
   z-index: 50;
   pointer-events: none;
 }
+
+/* Focus */
+:focus-visible { outline: 2px solid #d4a843; outline-offset: 3px; }
+button:focus-visible { box-shadow: 0 0 0 3px rgba(212,168,67,0.4); }
 
 /* Responsive */
 @media (max-width: 700px) {
